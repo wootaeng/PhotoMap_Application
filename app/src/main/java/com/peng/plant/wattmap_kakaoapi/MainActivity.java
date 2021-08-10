@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 
 import android.Manifest;
+import android.animation.TimeInterpolator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,15 +18,23 @@ import android.os.Bundle;
 
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
+
+import net.daum.mf.map.api.CameraUpdate;
+import net.daum.mf.map.api.CameraUpdateFactory;
+import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapView;
 
 
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener{
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, View.OnClickListener{//, TiltScrollController.ScrollListener
 
     private static final String TAG = "MainActivity";
 
@@ -36,6 +45,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
 
+    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft;
+    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
+
+    private TiltScrollController mTiltScrollController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +61,42 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mapViewContainer.addView(mapView);
 
+        //Map 리스너
         //지도 이동/확대/축소 이벤트
         mapView.setMapViewEventListener(this);
         //내 위치 추적
         mapView.setCurrentLocationEventListener(this);
+
+//        //동작센서
+//        mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
+
+        MapPOIItem marker = new MapPOIItem();
+
+        //기본 위치 설정
+        MapPoint mapPoint = MapPoint.mapPointWithGeoCoord(37.43209257085358, 127.17845960576476);
+        marker.setItemName("와트");
+        marker.setTag(0);
+        marker.setMapPoint(mapPoint);
+        marker.setMarkerType(MapPOIItem.MarkerType.RedPin);
+
+        //확대 축소 버튼
+        plusBtn = findViewById(R.id.zoomIn);
+        minusBtn = findViewById(R.id.zoomOut);
+        zoomIn = findViewById(R.id.zoomIn_text);
+        zoomOut = findViewById(R.id.zoomOut_text);
+        //지도 이동 버튼
+        map_Up = findViewById(R.id.map_up);
+        map_Down = findViewById(R.id.map_down);
+        map_Left = findViewById(R.id.map_left);
+        map_Right = findViewById(R.id.map_right);
+        mapUp = findViewById(R.id.mapup);
+        mapDown = findViewById(R.id.mapdown);
+        mapRight = findViewById(R.id.mapright);
+        mapLeft = findViewById(R.id.mapleft);
+
+        mapView.addPOIItem(marker);
+        //GPS 못찾는다면 지도 중심점 //와트
+        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.43209257085358, 127.17845960576476),true);
         //GPS 확인
         if (!checkLocationServicesStatus()) {
             showDialogForLocationServiceSetting();
@@ -59,8 +104,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             checkRunTimePermission();
         }
 
+        //카메라 이동범위 설정?
+
+
+        //버튼 리스너
+        plusBtn.setOnClickListener(this::onClick);
+        minusBtn.setOnClickListener(this::onClick);
+        zoomIn.setOnClickListener(ZoomControl);
+        zoomOut.setOnClickListener(ZoomControl);
+
 
     }
+
+
 
     @Override
     protected void onDestroy() {
@@ -160,6 +216,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 startActivityForResult(callGPSSettingIntent, GPS_ENABLE_REQUEST_CODE);
             }
         });
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
         builder.create().show();
     }
 
@@ -233,5 +295,48 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+    //확대축소 리스너
+    private View.OnClickListener ZoomControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.zoomIn_text:
+                    mapView.zoomIn(true);
+                    break;
+                case R.id.zoomOut_text:
+                    mapView.zoomOut(true);
+            }
+        }
+    };
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.zoomIn:
+                mapView.zoomIn(true);
+                break;
+            case R.id.zoomOut:
+                mapView.zoomOut(true);
+                break;
+        }
+    }
+    //지도 이동 리스너
+    private View.OnClickListener MapMoveControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.mapup:
 
+
+            }
+
+        }
+    };
+
+//    //틸트센서
+//    @Override
+//    public void onTilt(float x, float y) {
+//        mapView.setTranslationX(x);
+//        mapView.setTranslationY(y);
+//    }
 }

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/zoomIn"
+        android:layout_marginStart="600dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:text="+"
+        android:textSize="40px"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/zoomOut"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="30dp"
+        android:layout_toRightOf="@+id/zoomIn"
+        android:text="-"
+        android:textSize="40px"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/zoomIn_text"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/zoomIn"/>
+    <TextView
+        android:id="@+id/zoomOut_text"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/zoomOut"/>
+
+    <Button
+        android:id="@+id/mapup"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/mapup"
+        android:textSize="40px"
+        android:textStyle="bold" />
+    <Button
+        android:id="@+id/mapdown"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/mapdown"
+        android:textSize="40px"
+        android:textStyle="bold" />
+    <Button
+        android:id="@+id/mapright"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/mapright"
+        android:textSize="40px"
+        android:textStyle="bold" />
+    <Button
+        android:id="@+id/mapleft"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/mapleft"
+        android:textSize="40px"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/map_up"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/up"/>
+    <TextView
+        android:id="@+id/map_down"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/down"/>
+    <TextView
+        android:id="@+id/map_left"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/left"/>
+    <TextView
+        android:id="@+id/map_right"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="@string/right"/>
+
+
+
+</RelativeLayout>

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">wattMap_kakaoapi</string>
+    <string name="zoomIn">확대</string>
+    <string name="zoomOut">축소</string>
+    <string name="up">위로</string>
+    <string name="down">아래</string>
+    <string name="left">왼쪽</string>
+    <string name="right">오른쪽</string>
+
 </resources>
