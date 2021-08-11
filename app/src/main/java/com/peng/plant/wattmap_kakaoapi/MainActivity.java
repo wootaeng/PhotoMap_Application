@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
 
+import net.daum.android.map.coord.MapCoordLatLng;
 import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapPOIItem;
@@ -34,19 +35,28 @@ import net.daum.mf.map.api.MapView;
 
 
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, View.OnClickListener{//, TiltScrollController.ScrollListener
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener{//, TiltScrollController.ScrollListener
 
     private static final String TAG = "MainActivity";
 
+    //xml
     private MapView mapView;
     private ViewGroup mapViewContainer;
+    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel;
+    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
 
-    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft;
-    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
+    private double mCurrentLng;
+    private double mCurrentLat;
+    private double x;
+    private double y;
+
+    private MapPoint mapPoint;
+
+
 
     private TiltScrollController mTiltScrollController;
 
@@ -67,17 +77,20 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //내 위치 추적
         mapView.setCurrentLocationEventListener(this);
 
+
 //        //동작센서
 //        mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
-        MapPOIItem marker = new MapPOIItem();
 
         //기본 위치 설정
-        MapPoint mapPoint = MapPoint.mapPointWithGeoCoord(37.43209257085358, 127.17845960576476);
+        mapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+        //위치 마커
+        MapPOIItem marker = new MapPOIItem();
         marker.setItemName("와트");
         marker.setTag(0);
         marker.setMapPoint(mapPoint);
         marker.setMarkerType(MapPOIItem.MarkerType.RedPin);
+        mapView.addPOIItem(marker);
 
         //확대 축소 버튼
         plusBtn = findViewById(R.id.zoomIn);
@@ -93,10 +106,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapDown = findViewById(R.id.mapdown);
         mapRight = findViewById(R.id.mapright);
         mapLeft = findViewById(R.id.mapleft);
+        watt = findViewById(R.id.watt);
+        myLoc = findViewById(R.id.myLoc);
+        LocCancel = findViewById(R.id.myLocCancel);
 
-        mapView.addPOIItem(marker);
+
         //GPS 못찾는다면 지도 중심점 //와트
-        mapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(37.43209257085358, 127.17845960576476),true);
+        mapView.setMapCenterPoint(mapPoint,true);
         //GPS 확인
         if (!checkLocationServicesStatus()) {
             showDialogForLocationServiceSetting();
@@ -107,11 +123,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //카메라 이동범위 설정?
 
 
-        //버튼 리스너
-        plusBtn.setOnClickListener(this::onClick);
-        minusBtn.setOnClickListener(this::onClick);
-        zoomIn.setOnClickListener(ZoomControl);
-        zoomOut.setOnClickListener(ZoomControl);
+        //방향 버튼 리스너
+        plusBtn.setOnClickListener(ButtonZoomCon);
+        minusBtn.setOnClickListener(ButtonZoomCon);
+//        zoomIn.setOnClickListener(ZoomControl);
+//        zoomOut.setOnClickListener(ZoomControl);
+        mapUp.setOnClickListener(MapMoveControl);
+        mapDown.setOnClickListener(MapMoveControl);
+        mapRight.setOnClickListener(MapMoveControl);
+        mapLeft.setOnClickListener(MapMoveControl);
+        watt.setOnClickListener(MapMoveControl);
+        //내위치 리스너
+        myLoc.setOnClickListener(myLocation);
 
 
     }
@@ -128,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
-        Log.i(TAG, String.format("MapView onCurrentLocationUpdate (%f,%f) accuracy (%f)", mapPointGeo.latitude, mapPointGeo.longitude, v));
+        Log.d(TAG, String.format("MapView onCurrentLocationUpdate (%f,%f) accuracy (%f)", mapPointGeo.latitude, mapPointGeo.longitude, v));
     }
 
     @Override
@@ -167,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             if (check_result){
                 //위치값 가져오기
                 mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
-                Log.d(TAG, "start");
             }else {
                 //퍼미션 거부시 앱 종료
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,REQUIRED_PERMISSIONS[0])){
@@ -188,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED){
             //퍼미션을 가지고 있다면
             //위치값 가져옴
-            mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+            mapView.setMapCenterPoint(mapPoint,true);
         }else {//퍼미션 미허용 상태라면
             //사용자가 퍼미션 거부 한 경우
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, REQUIRED_PERMISSIONS[0])){
@@ -295,43 +317,86 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-    //확대축소 리스너
-    private View.OnClickListener ZoomControl = new View.OnClickListener() {
+//    //확대축소 리스너
+//    private View.OnClickListener ZoomControl = new View.OnClickListener() {
+//        @Override
+//        public void onClick(View v) {
+//            switch (v.getId()){
+//                case R.id.zoomIn_text:
+//                    mapView.zoomIn(true);
+//                    break;
+//                case R.id.zoomOut_text:
+//                    mapView.zoomOut(true);
+//            }
+//        }
+//    };
+    //확대축소 버튼 리스너
+    private View.OnClickListener ButtonZoomCon = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()){
-                case R.id.zoomIn_text:
+                case R.id.zoomIn:
                     mapView.zoomIn(true);
                     break;
-                case R.id.zoomOut_text:
+                case R.id.zoomOut:
                     mapView.zoomOut(true);
+                    break;
             }
         }
     };
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        switch (id){
-            case R.id.zoomIn:
-                mapView.zoomIn(true);
-                break;
-            case R.id.zoomOut:
-                mapView.zoomOut(true);
-                break;
-        }
-    }
+
     //지도 이동 리스너
     private View.OnClickListener MapMoveControl = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            CameraUpdate cameraUpdate;
             switch (v.getId()){
                 case R.id.mapup:
-
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.434273838609236, 127.17819906019075);
+                    cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint, 2f);
+                    mapView.moveCamera(cameraUpdate);
+                    break;
+                case R.id.mapdown:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.42943475131018, 127.1786067559549);
+                    cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint, 2f);
+                    mapView.moveCamera(cameraUpdate);
+                    break;
+                case R.id.mapleft:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43153911115641, 127.17491603644513);
+                    cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint, 2f);
+                    mapView.moveCamera(cameraUpdate);
+                    break;
+                case R.id.mapright:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43216955562511, 127.18132115132998);
+                    cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint, 2f);
+                    mapView.moveCamera(cameraUpdate);
+                    break;
+                case R.id.watt:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+                    cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint,2f);
+                    mapView.moveCamera(cameraUpdate);
+                    break;
 
             }
 
         }
     };
+
+    private View.OnClickListener myLocation = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.myLoc:
+                    mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+                    Log.d(TAG, "start");
+                    break;
+                case R.id.myLocCancel:
+                    
+            }
+        }
+    };
+
+
 
 //    //틸트센서
 //    @Override
