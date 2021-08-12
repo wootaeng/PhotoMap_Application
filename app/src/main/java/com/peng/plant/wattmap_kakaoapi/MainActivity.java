@@ -13,6 +13,7 @@ import android.animation.TimeInterpolator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 
@@ -51,12 +52,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     private double mCurrentLng;
     private double mCurrentLat;
-    private double x;
-    private double y;
+    private double MapX = 0.0;
+    private double MapY = 0.0;
+    private double latlng = 0.0;
 
     private MapPoint mapPoint;
-
-
 
     private TiltScrollController mTiltScrollController;
 
@@ -76,6 +76,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mapView.setMapViewEventListener(this);
         //내 위치 추적
         mapView.setCurrentLocationEventListener(this);
+
+        //중심좌표 얻어내기??
+        MapPoint.GeoCoordinate latlng= MapPoint.mapPointWithGeoCoord();
+        Log.d(TAG, "성공 +" + latlng.latitude);
+
+
+
 
 
 //        //동작센서
@@ -126,8 +133,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //방향 버튼 리스너
         plusBtn.setOnClickListener(ButtonZoomCon);
         minusBtn.setOnClickListener(ButtonZoomCon);
-//        zoomIn.setOnClickListener(ZoomControl);
-//        zoomOut.setOnClickListener(ZoomControl);
+        zoomIn.setOnClickListener(ZoomControl);
+        zoomOut.setOnClickListener(ZoomControl);
         mapUp.setOnClickListener(MapMoveControl);
         mapDown.setOnClickListener(MapMoveControl);
         mapRight.setOnClickListener(MapMoveControl);
@@ -135,11 +142,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         watt.setOnClickListener(MapMoveControl);
         //내위치 리스너
         myLoc.setOnClickListener(myLocation);
+        LocCancel.setOnClickListener(myLocation);
 
 
     }
 
+    public void MapCenterPoint(){
 
+    }
 
     @Override
     protected void onDestroy() {
@@ -189,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
             if (check_result){
                 //위치값 가져오기
-                mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+                startTracking();
             }else {
                 //퍼미션 거부시 앱 종료
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,REQUIRED_PERMISSIONS[0])){
@@ -271,6 +281,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)||locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
+    //위치추적 시작
+    private void startTracking(){
+        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading);
+    }
+
+    //위치추적 중지
+    private void stopTracking(){
+        mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOff);
+    }
+
     //MapviewEvent
     @Override
     public void onMapViewInitialized(MapView mapView) {
@@ -317,19 +337,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-//    //확대축소 리스너
-//    private View.OnClickListener ZoomControl = new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            switch (v.getId()){
-//                case R.id.zoomIn_text:
-//                    mapView.zoomIn(true);
-//                    break;
-//                case R.id.zoomOut_text:
-//                    mapView.zoomOut(true);
-//            }
-//        }
-//    };
+    //확대축소 리스너
+    private View.OnClickListener ZoomControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.zoomIn_text:
+                    mapView.zoomIn(true);
+                    break;
+                case R.id.zoomOut_text:
+                    mapView.zoomOut(true);
+            }
+        }
+    };
     //확대축소 버튼 리스너
     private View.OnClickListener ButtonZoomCon = new View.OnClickListener() {
         @Override
@@ -387,11 +407,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.myLoc:
-                    mapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
-                    Log.d(TAG, "start");
+                    startTracking();
+                    Log.d(TAG, "위치추적 시작");
+                    LocCancel.setVisibility(View.VISIBLE);
+                    myLoc.setVisibility(View.GONE);
+
                     break;
                 case R.id.myLocCancel:
-                    
+                    stopTracking();
+                    Log.d(TAG,"위치추적 중지");
+                    LocCancel.setVisibility(View.GONE);
+                    myLoc.setVisibility(View.VISIBLE);
+                    break;
             }
         }
     };

@@ -57,7 +57,7 @@
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/myLoc"
+            android:id="@+id/myLocCancel"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_above="@+id/watt"
@@ -68,7 +68,7 @@
             android:backgroundTint="@color/purple_700"
             android:visibility="gone"/>
         <Button
-            android:id="@+id/myLocCancel"
+            android:id="@+id/myLoc"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_above="@+id/watt"
