@@ -80,6 +80,17 @@
             />
 
         <Button
+            android:id="@+id/sensorStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/mapdown"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp" 
+            android:text="화면 고정"
+            android:textStyle="bold"
+            android:textSize="35px"/>
+
+        <Button
             android:id="@+id/mapup"
             android:layout_width="40dp"
             android:layout_height="40dp"
