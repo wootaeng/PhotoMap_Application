@@ -24,11 +24,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
 
+import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapPOIItem;
@@ -47,7 +49,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
     private MapPoint mMapPoint;
-    private MapPOIItem mCustomBmMarker;
+    private MapPOIItem mCustomBmMarker, marker;
+    private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.447229, 127.015515);
+
 
     private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop;
     private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     private TiltScrollController mTiltScrollController;
 
-    private CustomCalloutBalloonAdapter customCalloutBalloonAdapter;
+
 
     //이미지 값 가져오기?
     private ImagelatlngEXIF imagelatlngEXIF;
@@ -114,23 +118,20 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
 
         //커스텀 마커
-        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter(mMapView));
+        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
         createCustomBitmapMarker(mMapView);
-//        showAll();
 
 
         //동작센서
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
-
-//        MapPOIItem marker = new MapPOIItem();
-//        marker.setItemName("와트");
-//        marker.setTag(0);
-//        marker.setMapPoint(mapPoint);
-//        marker.setCustomImageResourceId(R.drawable.ic_launcher_foreground); // 마커 이미지.
-//
-//        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
-//        mMapView.addPOIItem(marker);
+        //기본마커
+        marker = new MapPOIItem();
+        marker.setItemName("와트");
+        marker.setTag(0);
+        marker.setMapPoint(mMapPoint);
+        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);//기본 마커
+        mMapView.addPOIItem(marker);
 
 
 
@@ -179,26 +180,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         LocCancel.setOnClickListener(myLocation);
         //회사이동
         watt.setOnClickListener(myLocation);
-        //센서 동작 리스너
-
 
 
     }
 
-    private void showAll() {
-        int padding = 20;
-        float minZoomLevel = 7;
-        float maxZoomLevel = 10;
-        MapPointBounds bounds = new MapPointBounds(mMapPoint,mMapPoint);
-        mMapView.moveCamera(CameraUpdateFactory.newMapPointBounds(bounds, padding, minZoomLevel, maxZoomLevel));
-    }
 
+    //커스텀 마커 담을 메소드
     private void createCustomBitmapMarker(MapView mMapView) {
         mCustomBmMarker = new MapPOIItem();
         String name = "커스텀 비트맵 마커";
         mCustomBmMarker.setItemName(name);
         mCustomBmMarker.setTag(2);
-        mCustomBmMarker.setMapPoint(mMapPoint);
+        mCustomBmMarker.setMapPoint(CUSTOM_MARKER_POINT2);
 
         mCustomBmMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
@@ -208,7 +201,29 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mMapView.addPOIItem(mCustomBmMarker);
         mMapView.selectPOIItem(mCustomBmMarker,true);
-        mMapView.setMapCenterPoint(mMapPoint, false);
+        mMapView.setMapCenterPoint(CUSTOM_MARKER_POINT2, false);
+    }
+
+    //커스텀 마커 인터페이스
+    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
+        private final View mCalloutBalloon;
+
+        public CustomCalloutBalloonAdapter() {
+            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_callout_balloon, null);
+        }
+
+        @Override
+        public View getCalloutBalloon(MapPOIItem poiItem) {
+            ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.test_1);
+            ((TextView) mCalloutBalloon.findViewById(R.id.imageTitle)).setText(poiItem.getItemName());
+            ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
+            return mCalloutBalloon;
+        }
+
+        @Override
+        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
+            return null;
+        }
     }
 
 //    //이미지 담을 arrayList
@@ -587,5 +602,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint) {
 
     }
+
+
 
 }
