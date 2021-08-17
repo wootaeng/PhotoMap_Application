@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.MapPOIItem;
@@ -16,11 +15,15 @@ class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
         mCalloutBalloon = activity.getLayoutInflater().inflate(R.layout.custom_callout_balloon, null);
     }
 
+    public CustomCalloutBalloonAdapter(View mCalloutBalloon) {
+
+        this.mCalloutBalloon = mCalloutBalloon;
+    }
+
     @Override
     public View getCalloutBalloon(MapPOIItem poiItem) {
         Log.d("asdfasdfasdfasd", poiItem.getItemName());
-        ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.ic_launcher_background);
-        ((TextView) mCalloutBalloon.findViewById(R.id.idddd)).setText(poiItem.getItemName());
+        ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.ic_launcher_foreground);
 //        ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
         return mCalloutBalloon;
     }

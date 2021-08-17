@@ -9,52 +9,46 @@ import androidx.core.content.ContextCompat;
 
 
 import android.Manifest;
-import android.animation.TimeInterpolator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.location.Location;
-import android.location.LocationListener;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.Bundle;
 
-import android.provider.MediaStore;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
 
-import net.daum.android.map.coord.MapCoordLatLng;
-import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.CameraUpdateFactory;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
+import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapView;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, TiltScrollController.ScrollListener{//
+public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener , TiltScrollController.ScrollListener{//
 
     private static final String TAG = "MainActivity";
 
     //xml
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
+    private MapPoint mMapPoint;
+    private MapPOIItem mCustomBmMarker;
+
     private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop;
     private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
 
@@ -70,15 +64,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private int mZoomLevel = 0;
     private float mZoomLevelfloat = (float)0.0;
 
+    //센서 동작
     private boolean sensor_control = true;
 
     private Context mContext;
 
-    private MapPoint mapPoint;
-
-
     private TiltScrollController mTiltScrollController;
 
+    private CustomCalloutBalloonAdapter customCalloutBalloonAdapter;
+
+    //이미지 값 가져오기?
     private ImagelatlngEXIF imagelatlngEXIF;
     private ExifInterface exif;
     private File file;
@@ -103,36 +98,41 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //내 위치 추적
         mMapView.setCurrentLocationEventListener(this);
 
+        //커스텀 마커 리스너
+        mMapView.setPOIItemEventListener(this);
+
         //기본 위치 설정
-        mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+        mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+
+        //이미지 위도경도 값 가져오기?
+//        exif = new ExifInterface(file);
+//
+//        file = new File(imagelatlngEXIF);
+//
+//        imagelatlngEXIF = new ImagelatlngEXIF(exif);
 
 
-        exif = new ExifInterface(file);
 
-        file = new File(imagelatlngEXIF);
-
-        imagelatlngEXIF = new ImagelatlngEXIF(exif);
-
-
-
-
-        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
+        //커스텀 마커
+        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter(mMapView));
+        createCustomBitmapMarker(mMapView);
+//        showAll();
 
 
         //동작센서
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
 
-        MapPOIItem marker = new MapPOIItem();
-        marker.setItemName("와트");
-        marker.setTag(0);
-        marker.setMapPoint(mapPoint);
-        marker.setCustomImageResourceId(R.drawable.ic_launcher_foreground); // 마커 이미지.
+//        MapPOIItem marker = new MapPOIItem();
+//        marker.setItemName("와트");
+//        marker.setTag(0);
+//        marker.setMapPoint(mapPoint);
+//        marker.setCustomImageResourceId(R.drawable.ic_launcher_foreground); // 마커 이미지.
+//
+//        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+//        mMapView.addPOIItem(marker);
 
-        marker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
-        mMapView.addPOIItem(marker);
 
-        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
 
         //확대 축소 버튼
         plusBtn = findViewById(R.id.zoomIn);
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
 
         //GPS 못찾는다면 지도 중심점 //와트
-        mMapView.setMapCenterPoint(mapPoint,true);
+        mMapView.setMapCenterPoint(mMapPoint,true);
         //GPS 확인
         if (!checkLocationServicesStatus()) {
             showDialogForLocationServiceSetting();
@@ -185,28 +185,55 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-    public ArrayList<String> getPathOfAllImg() {
-
-        ArrayList<String> result = new ArrayList<>();
-        //이미지 가져오기
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        //파일 정보 담기
-        String[] projection = { MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
-
-        //정렬하는 쿼리문
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
-
-        //가져올 칼럼
-        int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-
-        while (cursor.moveToNext()) {
-            String absolutePathOfImage = cursor.getString(columnIndex);
-            if (!TextUtils.isEmpty(absolutePathOfImage)) {
-                result.add(absolutePathOfImage);
-            }
-        }
-        return result;
+    private void showAll() {
+        int padding = 20;
+        float minZoomLevel = 7;
+        float maxZoomLevel = 10;
+        MapPointBounds bounds = new MapPointBounds(mMapPoint,mMapPoint);
+        mMapView.moveCamera(CameraUpdateFactory.newMapPointBounds(bounds, padding, minZoomLevel, maxZoomLevel));
     }
+
+    private void createCustomBitmapMarker(MapView mMapView) {
+        mCustomBmMarker = new MapPOIItem();
+        String name = "커스텀 비트맵 마커";
+        mCustomBmMarker.setItemName(name);
+        mCustomBmMarker.setTag(2);
+        mCustomBmMarker.setMapPoint(mMapPoint);
+
+        mCustomBmMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
+        mCustomBmMarker.setCustomCalloutBalloonBitmap(bm);
+        mCustomBmMarker.setCustomImageAutoscale(false);
+        mCustomBmMarker.setCustomImageAnchor(0.5f,0.5f);
+
+        mMapView.addPOIItem(mCustomBmMarker);
+        mMapView.selectPOIItem(mCustomBmMarker,true);
+        mMapView.setMapCenterPoint(mMapPoint, false);
+    }
+
+//    //이미지 담을 arrayList
+//    public ArrayList<String> getPathOfAllImg() {
+//
+//        ArrayList<String> result = new ArrayList<>();
+//        //이미지 가져오기
+//        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+//        //파일 정보 담기
+//        String[] projection = { MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
+//
+//        //정렬하는 쿼리문
+//        Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
+//
+//        //가져올 칼럼
+//        int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+//
+//        while (cursor.moveToNext()) {
+//            String absolutePathOfImage = cursor.getString(columnIndex);
+//            if (!TextUtils.isEmpty(absolutePathOfImage)) {
+//                result.add(absolutePathOfImage);
+//            }
+//        }
+//        return result;
+//    }
 
 
 
@@ -283,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED){
             //퍼미션을 가지고 있다면
             //위치값 가져옴
-            mMapView.setMapCenterPoint(mapPoint,true);
+            mMapView.setMapCenterPoint(mMapPoint,true);
         }else {//퍼미션 미허용 상태라면
             //사용자가 퍼미션 거부 한 경우
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, REQUIRED_PERMISSIONS[0])){
@@ -439,26 +466,26 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             switch (v.getId()){
                 case R.id.mapup:
                     mMapX = mMapX + 0.0035;
-                    mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapdown:
                     mMapX = mMapX - 0.0035;
-                    mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapleft:
                     mMapY = mMapY - 0.0035;
-                    mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapright:
                     mMapY = mMapY + 0.0035;
-                    mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
 
             }
             //현재 줌레벨 가져오기
             mZoomLevel = mMapView.getZoomLevel();
             //이동 좌표 update
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint,mZoomLevel);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
             //좌표이동
             mMapView.moveCamera(cameraUpdate);
         }
@@ -483,9 +510,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     break;
 
                 case R.id.watt:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
                     //이동 좌표 update
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint,mZoomLevel);
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
                     //좌표이동
                     mMapView.moveCamera(cameraUpdate);
                     break;
@@ -497,21 +524,21 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private void mapMove(int type) {
         if (type == UP) {
             mMapX = mMapX + 0.0005;
-            mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
         } else if (type == DOWN) {
             mMapX = mMapX - 0.0005;
-            mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
         } else if (type == RIGHT){
             mMapY = mMapY + 0.0005;
-            mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
         } else if (type == LEFT){
             mMapY = mMapY- 0.0005;
-            mapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
         }
         //현재 줌레벨 가져오기
         mZoomLevelfloat = mMapView.getZoomLevelFloat();
         //이동 좌표 update
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint, mZoomLevelfloat);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint, mZoomLevelfloat);
         //좌표이동
         mMapView.moveCamera(cameraUpdate);
     }
@@ -540,24 +567,25 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mTiltScrollController.releaseAllSensors();
     }
 
-    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
-        private final View mCalloutBalloon;
+    //커스텀 마커 리스너
+    @Override
+    public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) {
 
-        public CustomCalloutBalloonAdapter() {
-            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_callout_balloon, null);
-        }
-
-        @Override
-        public View getCalloutBalloon(MapPOIItem poiItem) {
-//            ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.ic_launcher);
-            ((TextView) mCalloutBalloon.findViewById(R.id.title)).setText(poiItem.getItemName());
-//            ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
-            return mCalloutBalloon;
-        }
-
-        @Override
-        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
-            return null;
-        }
     }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem) {
+
+    }
+
+    @Override
+    public void onCalloutBalloonOfPOIItemTouched(MapView mapView, MapPOIItem mapPOIItem, MapPOIItem.CalloutBalloonButtonType calloutBalloonButtonType) {
+
+    }
+
+    @Override
+    public void onDraggablePOIItemMoved(MapView mapView, MapPOIItem mapPOIItem, MapPoint mapPoint) {
+
+    }
+
 }
