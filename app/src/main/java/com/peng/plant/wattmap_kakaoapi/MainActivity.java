@@ -12,14 +12,22 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.media.ExifInterface;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
+import com.peng.plant.wattmap_kakaoapi.data.ImageData;
 
 import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.CameraUpdate;
@@ -39,6 +48,9 @@ import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapView;
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener , TiltScrollController.ScrollListener{//
@@ -78,15 +90,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
 
     //이미지 값 가져오기?
-    private ImagelatlngEXIF imagelatlngEXIF;
-    private ExifInterface exif;
-    private File file;
+    private ArrayList<ImageData> allimages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+
 
         mContext = this;
 
@@ -107,13 +119,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         //기본 위치 설정
         mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-
-        //이미지 위도경도 값 가져오기?
-//        exif = new ExifInterface(file);
-//
-//        file = new File(imagelatlngEXIF);
-//
-//        imagelatlngEXIF = new ImagelatlngEXIF(exif);
 
 
 
@@ -181,8 +186,13 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //회사이동
         watt.setOnClickListener(myLocation);
 
+        //이미지 가져오기
+        getPathOfAllImg();
+
 
     }
+
+
 
 
     //커스텀 마커 담을 메소드
@@ -226,30 +236,43 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     }
 
-//    //이미지 담을 arrayList
-//    public ArrayList<String> getPathOfAllImg() {
-//
-//        ArrayList<String> result = new ArrayList<>();
-//        //이미지 가져오기
-//        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-//        //파일 정보 담기
-//        String[] projection = { MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
-//
-//        //정렬하는 쿼리문
-//        Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
-//
-//        //가져올 칼럼
-//        int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-//
-//        while (cursor.moveToNext()) {
-//            String absolutePathOfImage = cursor.getString(columnIndex);
-//            if (!TextUtils.isEmpty(absolutePathOfImage)) {
-//                result.add(absolutePathOfImage);
-//            }
-//        }
-//        return result;
-//    }
+    //이미지 담을 arrayList
+    public ArrayList<String> getPathOfAllImg() {
 
+        ArrayList<String> result = new ArrayList<>();
+        //이미지 가져오기
+        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        //파일 정보 담기
+        String[] projection = {
+                MediaStore.MediaColumns.DATA,
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                MediaStore.Images.ImageColumns.LATITUDE,
+                MediaStore.Images.ImageColumns.LONGITUDE,
+                MediaStore.MediaColumns.MIME_TYPE
+        };
+
+        //정렬하는 쿼리문
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
+
+        while (cursor.moveToNext()) {
+            String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
+            Double latitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));
+            Double longitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));
+
+            if (!TextUtils.isEmpty(path)) {
+                result.add(path);
+                Log.d("cursor_path : ", path);
+            }
+            if (!TextUtils.isEmpty(name)) {
+                Log.d("cursor_name : ", name);
+            }
+            Log.d("cursor_latitude : ", latitude+"");
+            Log.d("cursor_longitude : ", longitude+"");
+
+        }
+        return result;
+    }
 
 
 
