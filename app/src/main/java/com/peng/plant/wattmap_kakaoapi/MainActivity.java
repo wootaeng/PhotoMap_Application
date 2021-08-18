@@ -48,6 +48,7 @@ import net.daum.mf.map.api.MapPointBounds;
 import net.daum.mf.map.api.MapView;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -61,16 +62,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
     private MapPoint mMapPoint;
-    private MapPOIItem mCustomBmMarker, marker;
-    private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.447229, 127.015515);
+    private MapPOIItem mCustomBmMarker;
+//    private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.447229, 127.015515);
 
 
-    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop;
+    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart;
     private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
-    String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private static final String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
 
     private double mCurrentLng;
     private double mCurrentLat;
@@ -98,9 +100,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         setContentView(R.layout.activity_main);
 
-
-
         mContext = this;
+
+        if(ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
 
         mMapView = new MapView(this);
 
@@ -126,18 +133,16 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
         createCustomBitmapMarker(mMapView);
 
-
         //동작센서
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
-        //기본마커
-        marker = new MapPOIItem();
-        marker.setItemName("와트");
-        marker.setTag(0);
-        marker.setMapPoint(mMapPoint);
-        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);//기본 마커
-        mMapView.addPOIItem(marker);
-
+//        //기본마커
+//        marker = new MapPOIItem();
+//        marker.setItemName("와트");
+//        marker.setTag(0);
+//        marker.setMapPoint(mMapPoint);
+//        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);//기본 마커
+//        mMapView.addPOIItem(marker);
 
 
         //확대 축소 버튼
@@ -146,10 +151,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         zoomIn = findViewById(R.id.zoomIn_text);
         zoomOut = findViewById(R.id.zoomOut_text);
         //지도 이동 버튼
+        //동작
         map_Up = findViewById(R.id.map_up);
         map_Down = findViewById(R.id.map_down);
         map_Left = findViewById(R.id.map_left);
         map_Right = findViewById(R.id.map_right);
+        //view
         mapUp = findViewById(R.id.mapup);
         mapDown = findViewById(R.id.mapdown);
         mapRight = findViewById(R.id.mapright);
@@ -158,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         myLoc = findViewById(R.id.myLoc);
         LocCancel = findViewById(R.id.myLocCancel);
         sensorStop = findViewById(R.id.sensorStop);
+        sensorStart = findViewById(R.id.sensorStart);
 
 
         //GPS 못찾는다면 지도 중심점 //와트
@@ -185,9 +193,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         LocCancel.setOnClickListener(myLocation);
         //회사이동
         watt.setOnClickListener(myLocation);
+        //센서 동작
+        sensorStop.setOnClickListener(Sensor_control);
+        sensorStart.setOnClickListener(Sensor_control);
+
 
         //이미지 가져오기
-        getPathOfAllImg();
+        ArrayList list = getPathOfAllImg();
+        Log.d("listsize",list.size()+"");
 
 
     }
@@ -201,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         String name = "커스텀 비트맵 마커";
         mCustomBmMarker.setItemName(name);
         mCustomBmMarker.setTag(2);
-        mCustomBmMarker.setMapPoint(CUSTOM_MARKER_POINT2);
+        mCustomBmMarker.setMapPoint(mMapPoint);
 
         mCustomBmMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
@@ -211,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mMapView.addPOIItem(mCustomBmMarker);
         mMapView.selectPOIItem(mCustomBmMarker,true);
-        mMapView.setMapCenterPoint(CUSTOM_MARKER_POINT2, false);
+        mMapView.setMapCenterPoint(mMapPoint, false);
     }
 
     //커스텀 마커 인터페이스
@@ -238,8 +251,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     //이미지 담을 arrayList
     public ArrayList<String> getPathOfAllImg() {
+        ArrayList imageList = new ArrayList<ImageData>();
 
-        ArrayList<String> result = new ArrayList<>();
         //이미지 가져오기
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         //파일 정보 담기
@@ -260,18 +273,35 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             Double latitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));
             Double longitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));
 
+            ImageData data = new ImageData();
+
             if (!TextUtils.isEmpty(path)) {
-                result.add(path);
                 Log.d("cursor_path : ", path);
+                data.setPath(path);
             }
             if (!TextUtils.isEmpty(name)) {
                 Log.d("cursor_name : ", name);
+                data.setName(name);
             }
-            Log.d("cursor_latitude : ", latitude+"");
-            Log.d("cursor_longitude : ", longitude+"");
 
+            ExifInterface e = null;
+            try {
+                e = new ExifInterface(path);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+            data.setLatitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+            data.setLongitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+
+//            data.setLatitude(latitude);
+//            data.setLongitude(longitude);
+
+            Log.d("cursor_latitude : ", latitude.toString()+"");
+            Log.d("cursor_longitude : ", longitude.toString()+"");
+
+            imageList.add(data);
         }
-        return result;
+        return imageList;
     }
 
 
@@ -306,8 +336,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     public void onCurrentLocationUpdateCancelled(MapView mapView) {
 
     }
-
-
 
     //requestPermission 을 사용한 퍼미션 요청의 결과 리턴 메소드
     @Override
@@ -549,61 +577,73 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
                 case R.id.watt:
                     mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+
+                    //현재 줌레벨 가져오기
+                    mZoomLevel = mMapView.getZoomLevel();
                     //이동 좌표 update
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
                     //좌표이동
                     mMapView.moveCamera(cameraUpdate);
+
                     break;
             }
         }
     };
 
-    //지도 센서 이동 메소드
-    private void mapMove(int type) {
-        if (type == UP) {
-            mMapX = mMapX + 0.0005;
-            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-        } else if (type == DOWN) {
-            mMapX = mMapX - 0.0005;
-            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-        } else if (type == RIGHT){
-            mMapY = mMapY + 0.0005;
-            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-        } else if (type == LEFT){
-            mMapY = mMapY- 0.0005;
-            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+    private View.OnClickListener Sensor_control = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.sensorStop:
+                    sensor_control = false;
+                    sensorStop.setVisibility(View.GONE);
+                    sensorStart.setVisibility(View.VISIBLE);
+                    break;
+                case R.id.sensorStart:
+                    sensor_control = true;
+                    sensorStart.setVisibility(View.GONE);
+                    sensorStop.setVisibility(View.VISIBLE);
+                    break;
+            }
         }
-        //현재 줌레벨 가져오기
-        mZoomLevelfloat = mMapView.getZoomLevelFloat();
-        //이동 좌표 update
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint, mZoomLevelfloat);
-        //좌표이동
-        mMapView.moveCamera(cameraUpdate);
-    }
+    };
 
-
-    final int UP = 0;
-    int DOWN = 1;
-    int RIGHT = 2;
-    int LEFT = 3;
+//    //지도 센서 이동 메소드
+//    private void mapMove(int type) {
+//        if (type == UP) {
+//            mMapX = mMapX + 0.0005;
+//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+//        } else if (type == DOWN) {
+//            mMapX = mMapX - 0.0005;
+//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+//        } else if (type == RIGHT){
+//            mMapY = mMapY + 0.0005;
+//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+//        } else if (type == LEFT){
+//            mMapY = mMapY- 0.0005;
+//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+//        }
+//        //현재 줌레벨 가져오기
+//        mZoomLevelfloat = mMapView.getZoomLevelFloat();
+//        //이동 좌표 update
+//        CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint, mZoomLevelfloat);
+//        //좌표이동
+//        mMapView.moveCamera(cameraUpdate);
+//    }
+//
+//
+//    final int UP = 0;
+//    int DOWN = 1;
+//    int RIGHT = 2;
+//    int LEFT = 3;
 
     //틸트센서
     @Override
     public void onTilt(float x, float y) {
-//        if (x > 0) {
-//            mapMove(UP);
-//        } else if ( x < 0) {
-//            mapMove(DOWN);
-//        } else if ( y > 0){
-//            mapMove(RIGHT);
-//        } else if ( y < 0) {
-//            mapMove(LEFT);
-//        }
+
+
     }
 
-    private void stopSensor(){
-        mTiltScrollController.releaseAllSensors();
-    }
 
     //커스텀 마커 리스너
     @Override

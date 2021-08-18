@@ -49,4 +49,10 @@ public class ImageData {
     public void setLongitude(Double longitude) {
         Longitude = longitude;
     }
+
+    public void setLatitude(String attribute) {
+    }
+
+    public void setLongitude(String attribute) {
+    }
 }
