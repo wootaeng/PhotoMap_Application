@@ -80,16 +80,33 @@
             android:background="@drawable/locationcancel"
             android:backgroundTint="@color/black" />
 
+        <TextView
+            android:id="@+id/locOn"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc" />
+        <TextView
+            android:id="@+id/locOff"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/locOff" />
+        <TextView
+            android:id="@+id/wattH"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/watthome" />
+
         <Button
-        android:id="@+id/sensorStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/mapdown"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
-        android:text="화면 고정"
-        android:textSize="30px"
-        android:textStyle="bold" />
+            android:id="@+id/sensorStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/mapdown"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="5dp"
+            android:text="센서 off"
+            android:textSize="20px"
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/sensorStart"
@@ -98,10 +115,10 @@
             android:layout_above="@+id/mapdown"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="5dp"
-            android:text="고정 해제"
-            android:textSize="30px"
+            android:text="센서 on"
+            android:textSize="20px"
             android:textStyle="bold"
-            android:visibility="gone"/>
+            />
 
         <Button
             android:id="@+id/mapup"

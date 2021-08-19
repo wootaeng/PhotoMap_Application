@@ -129,7 +129,7 @@ public class TiltScrollController implements SensorEventListener {
         mOldX = newX;
         mOldZ = newZ;
 
-        mListener.onTilt(deltaZ * 20,  deltaX * 20);
+        mListener.onTilt(deltaZ ,  deltaX );
     }
 
     /**

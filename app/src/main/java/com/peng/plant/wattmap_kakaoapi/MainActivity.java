@@ -18,6 +18,7 @@ import android.content.pm.Signature;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.media.Image;
@@ -42,6 +43,7 @@ import com.peng.plant.wattmap_kakaoapi.data.ImageData;
 import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.CameraUpdateFactory;
+import net.daum.mf.map.api.MapCircle;
 import net.daum.mf.map.api.MapPOIItem;
 import net.daum.mf.map.api.MapPoint;
 import net.daum.mf.map.api.MapPointBounds;
@@ -52,6 +54,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener , TiltScrollController.ScrollListener{//
@@ -61,29 +64,25 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     //xml
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
-    private MapPoint mMapPoint;
-    private MapPOIItem mCustomBmMarker;
-//    private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.447229, 127.015515);
+    private MapPoint mMapPoint, mCenterPoint;
+    private MapPOIItem marker,mCustomBmMarker, mCustomMarker;
+    private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.436895223523045, 127.17824745004005);
 
 
     private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart;
-    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right;
+    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right, locOn, locOff, wattH;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     private static final String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
 
-    private double mCurrentLng;
-    private double mCurrentLat;
-    private double mMapX = 37.43225475043913;
-    private double mMapY = 127.17844582341077;
-    private double mLatlng = 0.0;
+    private double mCurrentLng, mCurrentLat, mMapX, mMapY;
     private int mZoomLevel = 0;
     private float mZoomLevelfloat = (float)0.0;
 
     //센서 동작
-    private boolean sensor_control = true;
+    private boolean sensor_control = false;
 
     private Context mContext;
 
@@ -125,24 +124,37 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mMapView.setPOIItemEventListener(this);
 
         //기본 위치 설정
-        mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+        mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+        //중심좌표
 
 
 
-        //커스텀 마커
-        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
-        createCustomBitmapMarker(mMapView);
+//        //커스텀 마커
+//        mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter());
+//        createCustomBitmapMarker(mMapView);
 
         //동작센서
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
 //        //기본마커
-//        marker = new MapPOIItem();
-//        marker.setItemName("와트");
-//        marker.setTag(0);
-//        marker.setMapPoint(mMapPoint);
-//        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);//기본 마커
-//        mMapView.addPOIItem(marker);
+        marker = new MapPOIItem();
+        marker.setItemName("와트");
+        marker.setTag(0);
+        marker.setMapPoint(mMapPoint);
+        marker.setMarkerType(MapPOIItem.MarkerType.BluePin);//기본 마커
+        marker.setSelectedMarkerType(MapPOIItem.MarkerType.RedPin);
+        mMapView.addPOIItem(marker);
+
+        //커스텀 마커
+//        mCustomMarker = new MapPOIItem();
+//        mCustomMarker.setItemName("와트");
+//        mCustomMarker.setTag(1);
+//        mCustomMarker.setMapPoint(mMapPoint);
+//        mCustomMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+//        mCustomMarker.setCustomImageResourceId(R.drawable.mylocation);
+//        mCustomMarker.setCustomImageAutoscale(false);
+//        mCustomMarker.setCustomImageAnchor(0.5f,0.5f);
+//        mMapView.addPOIItem(mCustomMarker);
 
 
         //확대 축소 버튼
@@ -151,11 +163,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         zoomIn = findViewById(R.id.zoomIn_text);
         zoomOut = findViewById(R.id.zoomOut_text);
         //지도 이동 버튼
-        //동작
         map_Up = findViewById(R.id.map_up);
         map_Down = findViewById(R.id.map_down);
         map_Left = findViewById(R.id.map_left);
         map_Right = findViewById(R.id.map_right);
+        //위치
+        locOn = findViewById(R.id.locOn);
+        locOff = findViewById(R.id.locOff);
+        wattH = findViewById(R.id.wattH);
         //view
         mapUp = findViewById(R.id.mapup);
         mapDown = findViewById(R.id.mapdown);
@@ -177,22 +192,43 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             checkRunTimePermission();
         }
 
+        MapCircle circle = new MapCircle(
+                mMapPoint,
+                1000,
+                Color.argb(128,255,0,0),//strokecolor테두리
+                Color.argb(0,0,0,0)//fillcolor투명하게
 
-        //방향 버튼 리스너
+        );
+        circle.setTag(1234);
+        mMapView.addCircle(circle);
+
+
+        //줌 버튼 리스너
         plusBtn.setOnClickListener(ButtonZoomCon);
         minusBtn.setOnClickListener(ButtonZoomCon);
+        //줌 음성 리스너
         zoomIn.setOnClickListener(ZoomControl);
         zoomOut.setOnClickListener(ZoomControl);
+        //방향 버튼 리스너
         mapUp.setOnClickListener(MapMoveControl);
         mapDown.setOnClickListener(MapMoveControl);
         mapRight.setOnClickListener(MapMoveControl);
         mapLeft.setOnClickListener(MapMoveControl);
-
+        //방향 음성 리스너
+        map_Up.setOnClickListener(MapMoveControl_v);
+        map_Down.setOnClickListener(MapMoveControl_v);
+        map_Right.setOnClickListener(MapMoveControl_v);
+        map_Left.setOnClickListener(MapMoveControl_v);
         //내위치 리스너
         myLoc.setOnClickListener(myLocation);
         LocCancel.setOnClickListener(myLocation);
+        //내위치 음성 리스너
+        locOn.setOnClickListener(myLocation_v);
+        locOff.setOnClickListener(myLocation_v);
         //회사이동
         watt.setOnClickListener(myLocation);
+        //회사 음성
+        wattH.setOnClickListener(myLocation_v);
         //센서 동작
         sensorStop.setOnClickListener(Sensor_control);
         sensorStart.setOnClickListener(Sensor_control);
@@ -208,46 +244,46 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
 
 
-    //커스텀 마커 담을 메소드
-    private void createCustomBitmapMarker(MapView mMapView) {
-        mCustomBmMarker = new MapPOIItem();
-        String name = "커스텀 비트맵 마커";
-        mCustomBmMarker.setItemName(name);
-        mCustomBmMarker.setTag(2);
-        mCustomBmMarker.setMapPoint(mMapPoint);
+//    //커스텀 마커 담을 메소드
+//    private void createCustomBitmapMarker(MapView mMapView) {
+//        mCustomBmMarker = new MapPOIItem();
+//        String name = "커스텀 비트맵 마커";
+//        mCustomBmMarker.setItemName(name);
+//        mCustomBmMarker.setTag(2);
+//        mCustomBmMarker.setMapPoint(CUSTOM_MARKER_POINT2);
+//
+//        mCustomBmMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
+//        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
+//        mCustomBmMarker.setCustomCalloutBalloonBitmap(bm);
+//        mCustomBmMarker.setCustomImageAutoscale(false);
+//        mCustomBmMarker.setCustomImageAnchor(0.5f,0.5f);
+//
+//        mMapView.addPOIItem(mCustomBmMarker);
+//        mMapView.selectPOIItem(mCustomBmMarker,true);
+//        mMapView.setMapCenterPoint(CUSTOM_MARKER_POINT2, false);
+//    }
 
-        mCustomBmMarker.setMarkerType(MapPOIItem.MarkerType.CustomImage);
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
-        mCustomBmMarker.setCustomCalloutBalloonBitmap(bm);
-        mCustomBmMarker.setCustomImageAutoscale(false);
-        mCustomBmMarker.setCustomImageAnchor(0.5f,0.5f);
-
-        mMapView.addPOIItem(mCustomBmMarker);
-        mMapView.selectPOIItem(mCustomBmMarker,true);
-        mMapView.setMapCenterPoint(mMapPoint, false);
-    }
-
-    //커스텀 마커 인터페이스
-    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
-        private final View mCalloutBalloon;
-
-        public CustomCalloutBalloonAdapter() {
-            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_callout_balloon, null);
-        }
-
-        @Override
-        public View getCalloutBalloon(MapPOIItem poiItem) {
-            ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.test_1);
-            ((TextView) mCalloutBalloon.findViewById(R.id.imageTitle)).setText(poiItem.getItemName());
-            ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
-            return mCalloutBalloon;
-        }
-
-        @Override
-        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
-            return null;
-        }
-    }
+//    //커스텀 마커 인터페이스
+//    class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
+//        private final View mCalloutBalloon;
+//
+//        public CustomCalloutBalloonAdapter() {
+//            mCalloutBalloon = getLayoutInflater().inflate(R.layout.custom_callout_balloon, null);
+//        }
+//
+//        @Override
+//        public View getCalloutBalloon(MapPOIItem poiItem) {
+//            ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageResource(R.drawable.test_1);
+//            ((TextView) mCalloutBalloon.findViewById(R.id.imageTitle)).setText(poiItem.getItemName());
+//            ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
+//            return mCalloutBalloon;
+//        }
+//
+//        @Override
+//        public View getPressedCalloutBalloon(MapPOIItem poiItem) {
+//            return null;
+//        }
+//    }
 
     //이미지 담을 arrayList
     public ArrayList<String> getPathOfAllImg() {
@@ -284,17 +320,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                 data.setName(name);
             }
 
-            ExifInterface e = null;
-            try {
-                e = new ExifInterface(path);
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-            data.setLatitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-            data.setLongitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+//            ExifInterface e = null;
+//            try {
+//                e = new ExifInterface(path);
+//            } catch (IOException ioException) {
+//                ioException.printStackTrace();
+//            }
+//            data.setLatitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+//            data.setLongitude(e.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
 
-//            data.setLatitude(latitude);
-//            data.setLongitude(longitude);
+            data.setLatitude(latitude);
+            data.setLongitude(longitude);
 
             Log.d("cursor_latitude : ", latitude.toString()+"");
             Log.d("cursor_longitude : ", longitude.toString()+"");
@@ -507,6 +543,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     break;
                 case R.id.zoomOut_text:
                     mMapView.zoomOut(true);
+                    break;
             }
         }
     };
@@ -531,19 +568,23 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.mapup:
-                    mMapX = mMapX + 0.0035;
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude + 0.0035;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
                     mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapdown:
-                    mMapX = mMapX - 0.0035;
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude - 0.0035;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
                     mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapleft:
-                    mMapY = mMapY - 0.0035;
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude - 0.0035;
                     mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
                 case R.id.mapright:
-                    mMapY = mMapY + 0.0035;
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude + 0.0035;
                     mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
                     break;
 
@@ -556,7 +597,43 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             mMapView.moveCamera(cameraUpdate);
         }
     };
+    //지도 음성 이동 리스너
+    private View.OnClickListener MapMoveControl_v = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.map_up:
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude + 0.0035;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    break;
+                case R.id.map_down:
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude - 0.0035;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    break;
+                case R.id.map_left:
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude - 0.0035;
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    break;
+                case R.id.map_right:
+                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude + 0.0035;
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    break;
 
+            }
+            //현재 줌레벨 가져오기
+            mZoomLevel = mMapView.getZoomLevel();
+            //이동 좌표 update
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
+            //좌표이동
+                mMapView.moveCamera(cameraUpdate);
+        }
+    };
+
+    //내위치 버튼 리스너
     private View.OnClickListener myLocation = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -577,14 +654,44 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
                 case R.id.watt:
                     mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
-
                     //현재 줌레벨 가져오기
                     mZoomLevel = mMapView.getZoomLevel();
                     //이동 좌표 update
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
                     //좌표이동
                     mMapView.moveCamera(cameraUpdate);
+                    break;
+            }
+        }
+    };
 
+    //내위치 음성 리스너
+    private View.OnClickListener myLocation_v = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.locOn:
+                    startTracking();
+                    Log.d(TAG, "위치추적 시작");
+                    LocCancel.setVisibility(View.VISIBLE);
+                    myLoc.setVisibility(View.GONE);
+
+                    break;
+                case R.id.locOff:
+                    stopTracking();
+                    Log.d(TAG,"위치추적 중지");
+                    LocCancel.setVisibility(View.GONE);
+                    myLoc.setVisibility(View.VISIBLE);
+                    break;
+
+                case R.id.wattH:
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+                    //현재 줌레벨 가져오기
+                    mZoomLevel = mMapView.getZoomLevel();
+                    //이동 좌표 update
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
+                    //좌표이동
+                    mMapView.moveCamera(cameraUpdate);
                     break;
             }
         }
@@ -598,6 +705,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     sensor_control = false;
                     sensorStop.setVisibility(View.GONE);
                     sensorStart.setVisibility(View.VISIBLE);
+
+                    Log.d("Sensor","센서꺼짐");
                     break;
                 case R.id.sensorStart:
                     sensor_control = true;
@@ -608,39 +717,19 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
-//    //지도 센서 이동 메소드
-//    private void mapMove(int type) {
-//        if (type == UP) {
-//            mMapX = mMapX + 0.0005;
-//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-//        } else if (type == DOWN) {
-//            mMapX = mMapX - 0.0005;
-//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-//        } else if (type == RIGHT){
-//            mMapY = mMapY + 0.0005;
-//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-//        } else if (type == LEFT){
-//            mMapY = mMapY- 0.0005;
-//            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-//        }
-//        //현재 줌레벨 가져오기
-//        mZoomLevelfloat = mMapView.getZoomLevelFloat();
-//        //이동 좌표 update
-//        CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint, mZoomLevelfloat);
-//        //좌표이동
-//        mMapView.moveCamera(cameraUpdate);
-//    }
-//
-//
-//    final int UP = 0;
-//    int DOWN = 1;
-//    int RIGHT = 2;
-//    int LEFT = 3;
+
 
     //틸트센서
     @Override
     public void onTilt(float x, float y) {
+        if(sensor_control){
+            mCurrentLat = x /1000;
+            mCurrentLng = y /1000;
 
+            double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+            double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+            mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat - mCurrentLng , lng + mCurrentLat),true);
+        }
 
     }
 
