@@ -188,6 +188,48 @@
             android:layout_height="1dp"
             android:text="@string/right" />
 
+        <Button
+            android:id="@+id/circle500m"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="500m"
+            android:textStyle="bold"
+            android:textSize="20px"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="10dp"/>
+
+        <Button
+            android:id="@+id/circle1k"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:layout_toRightOf="@id/circle500m"
+            android:text="1Km"
+            android:textSize="20px"
+            android:textStyle="bold" />
+        <Button
+            android:id="@+id/circle5k"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5Km"
+            android:textStyle="bold"
+            android:textSize="20px"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/circle1k"/>
+        <Button
+            android:id="@+id/circle10k"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10Km"
+            android:textStyle="bold"
+            android:textSize="20px"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/circle5k"/>
+
+
     </RelativeLayout>
 
 

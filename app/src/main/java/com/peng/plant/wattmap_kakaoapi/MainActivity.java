@@ -40,6 +40,7 @@ import android.widget.Toast;
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
 import com.peng.plant.wattmap_kakaoapi.data.ImageData;
 
+import net.daum.android.map.coord.MapCoordLatLng;
 import net.daum.mf.map.api.CalloutBalloonAdapter;
 import net.daum.mf.map.api.CameraUpdate;
 import net.daum.mf.map.api.CameraUpdateFactory;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     private static final String TAG = "MainActivity";
 
+    private Context mContext;
+
     //xml
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final MapPoint CUSTOM_MARKER_POINT2 = MapPoint.mapPointWithGeoCoord(37.436895223523045, 127.17824745004005);
 
 
-    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart;
+    private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart, circle;
     private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right, locOn, locOff, wattH;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
@@ -83,10 +86,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     //센서 동작
     private boolean sensor_control = false;
-
-    private Context mContext;
-
     private TiltScrollController mTiltScrollController;
+    //범위 써클
+//    private MapCircle circle;
 
 
 
@@ -181,6 +183,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         LocCancel = findViewById(R.id.myLocCancel);
         sensorStop = findViewById(R.id.sensorStop);
         sensorStart = findViewById(R.id.sensorStart);
+        //circle
+        circle = findViewById(R.id.circle500m);
 
 
         //GPS 못찾는다면 지도 중심점 //와트
@@ -191,17 +195,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }else {
             checkRunTimePermission();
         }
-
-        MapCircle circle = new MapCircle(
-                mMapPoint,
-                1000,
-                Color.argb(128,255,0,0),//strokecolor테두리
-                Color.argb(0,0,0,0)//fillcolor투명하게
-
-        );
-        circle.setTag(1234);
-        mMapView.addCircle(circle);
-
 
         //줌 버튼 리스너
         plusBtn.setOnClickListener(ButtonZoomCon);
@@ -232,11 +225,24 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //센서 동작
         sensorStop.setOnClickListener(Sensor_control);
         sensorStart.setOnClickListener(Sensor_control);
+        //반경표시
+        circle.setOnClickListener(circle_control);
 
 
         //이미지 가져오기
         ArrayList list = getPathOfAllImg();
         Log.d("listsize",list.size()+"");
+
+
+
+
+        //circle 을 한화면에 다 보여주는 코드
+//        MapPointBounds[] mapPointBoundsArray = {circle1.getBound(),circle2.getBound(),circle3.getBound(),circle4.getBound()};
+//        MapPointBounds mapPointBounds = new MapPointBounds(mapPointBoundsArray);
+//        int padding = 50;
+//        mMapView.moveCamera(CameraUpdateFactory.newMapPointBounds(mapPointBounds,padding));
+
+//        customCircle();
 
 
     }
@@ -629,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             //이동 좌표 update
             CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
             //좌표이동
-                mMapView.moveCamera(cameraUpdate);
+            mMapView.moveCamera(cameraUpdate);
         }
     };
 
@@ -733,6 +739,30 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+    private View.OnClickListener circle_control = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            customCircle();
+        }
+    };
+    private void customCircle(){
+
+        mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+        mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+        mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+        mMapView.setMapCenterPoint(mMapPoint,true);
+
+        MapCircle circle1 = new MapCircle(
+                mMapPoint,
+                500,
+                Color.argb(128,255,0,0),//strokecolor테두리
+                Color.argb(0,0,0,0)//fillcolor투명하게
+
+        );
+        circle1.setTag(1);
+
+        mMapView.addCircle(circle1);
+    }
 
     //커스텀 마커 리스너
     @Override
