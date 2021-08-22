@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/translation">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -10,9 +11,9 @@
 
         <ImageView
             android:id="@+id/badge"
-            android:layout_width="121dp"
-            android:layout_height="210dp"
-            android:src="@drawable/custom" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/custom"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -29,7 +30,8 @@
                 android:text="Custom Marker"
                 android:textColor="#ff000000"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/desc"
@@ -39,7 +41,8 @@
                 android:singleLine="true"
                 android:text="custom marker desc."
                 android:textColor="#ff7f7f7f"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 

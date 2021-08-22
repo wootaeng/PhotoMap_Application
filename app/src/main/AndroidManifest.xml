@@ -27,6 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activity.ImageActivity" android:screenOrientation="landscape"/>
         <meta-data android:name="com.kakao.sdk.AppKey" android:value="ec67fa50418136f6b163879ff4028b3e"/>
     </application>
 
