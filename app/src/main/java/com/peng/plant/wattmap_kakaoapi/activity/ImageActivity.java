@@ -1,7 +1,9 @@
 package com.peng.plant.wattmap_kakaoapi.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.Bundle;
 import android.widget.ImageView;
 
@@ -18,22 +20,13 @@ public class ImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
 
-        ImageView image = findViewById(R.id.image);
-//
-//        Bitmap bitmap = (Bitmap)getIntent().getParcelableExtra("image");
-//
-//        image.setImageBitmap(bitmap);
+        ImageView imageView = findViewById(R.id.image);
 
-        Bitmap bmp = null;
-        String filename = getIntent().getStringExtra("image");
-        try {
-            FileInputStream is = this.openFileInput(filename);
-            bmp = BitmapFactory.decodeStream(is);
-            is.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        image.setImageBitmap(bmp);
+        String path = getIntent().getStringExtra("image");
+        Bitmap bm = BitmapFactory.decodeFile(path);
+
+        imageView.setImageBitmap(bm);
+
 
     }
 

@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //GPS 못찾는다면 지도 중심점 //와트
         mMapView.setMapCenterPoint(mMapPoint,true);
 
-
         init();
 
         mContext = this;
@@ -175,8 +174,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     //커스텀 마커 담을 메소드
     private MapPOIItem createCustomBitmapMarker(ImageData data) {
         MapPOIItem m = new MapPOIItem();
-        String name = "Custom Bitmap Marker";
-        m.setItemName(data.getName());
+        m.setItemName(data.getPath());
         m.setTag(2);
 
         MapPoint point = MapPoint.mapPointWithGeoCoord(data.getLatitude(), data.getLongitude());
@@ -188,8 +186,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 //        if(imgFile.exists()){
         Bitmap bm = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
 //        }
-
-//        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.test_1);
 
         m.setCustomImageBitmap(resizingBitmap(bm));
         m.setCustomImageAutoscale(false);
@@ -700,23 +696,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 //        startActivity(intent);
 
 
-        try {
-            //Write file
-            String filename = mapPOIItem.getItemName();
-            FileOutputStream stream = this.openFileOutput(filename, Context.MODE_PRIVATE);
-            mapPOIItem.getCustomImageBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+        Intent intent = new Intent(getApplicationContext(), ImageActivity.class);
+        intent.putExtra("image",mapPOIItem.getItemName());
+        startActivity(intent);
 
-            //Cleanup
-            stream.close();
-            mapPOIItem.getCustomImageBitmap().recycle();
-
-            //Pop intent
-            Intent in1 = new Intent(this, ImageActivity.class);
-            in1.putExtra("image", filename);
-            startActivity(in1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
 
 
