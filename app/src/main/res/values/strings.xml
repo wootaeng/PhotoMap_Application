@@ -9,5 +9,5 @@
     <string name="loc">내위치</string>
     <string name="locOff">위치해제</string>
     <string name="watthome">와트</string>
-
+    <string name="circleValue">현재 반경</string>
 </resources>

@@ -189,46 +189,54 @@
             android:text="@string/right" />
 
         <Button
-            android:id="@+id/circle500m"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="500m"
-            android:textStyle="bold"
-            android:textSize="20px"
+            android:id="@+id/circle500"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginTop="30dp"
-            android:layout_marginLeft="10dp"/>
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/ic_one"/>
 
         <Button
-            android:id="@+id/circle1k"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/circle1000"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="30dp"
-            android:layout_toRightOf="@id/circle500m"
-            android:text="1Km"
-            android:textSize="20px"
-            android:textStyle="bold" />
+            android:layout_toRightOf="@id/circle500"
+            android:background="@drawable/ic_two" />
         <Button
-            android:id="@+id/circle5k"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="5Km"
-            android:textStyle="bold"
-            android:textSize="20px"
+            android:id="@+id/circle3000"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginTop="30dp"
             android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@id/circle1k"/>
+            android:layout_toRightOf="@id/circle1000"
+            android:background="@drawable/ic_three"/>
         <Button
-            android:id="@+id/circle10k"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10Km"
-            android:textStyle="bold"
-            android:textSize="20px"
+            android:id="@+id/circle5000"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginTop="30dp"
             android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/circle5k"/>
-
+            android:layout_toRightOf="@+id/circle3000"
+            android:background="@drawable/ic_four"/>
+        <Button
+            android:id="@+id/removeC"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/ic_remove"
+            android:layout_toRightOf="@id/circle5000"
+            />
+        <TextView
+            android:id="@+id/circleTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/circleValue"
+            android:layout_marginTop="80dp"
+            android:layout_marginLeft="40dp"
+            android:textSize="15sp"/>
 
     </RelativeLayout>
 

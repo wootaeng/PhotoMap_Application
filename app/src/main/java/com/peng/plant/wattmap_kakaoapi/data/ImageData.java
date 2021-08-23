@@ -7,6 +7,16 @@ public class ImageData {
     private Double latitude;
     private Double Longitude;
 
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    private int count = 1;
+
     public ImageData(String path, String name, Double latitude, Double longitude) {
         this.path = path;
         this.name = name;
