@@ -31,40 +31,26 @@
             android:background="@drawable/zoomout"
              />
 
-        <TextView
-            android:id="@+id/zoomIn_text"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/zoomIn" />
-
-        <TextView
-            android:id="@+id/zoomOut_text"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/zoomOut" />
-
 
         <Button
             android:id="@+id/watt"
-            android:layout_width="60dp"
-            android:layout_height="40dp"
+            android:layout_width="59dp"
+            android:layout_height="46dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_marginStart="600dp"
             android:layout_marginEnd="21dp"
             android:layout_marginBottom="42dp"
-            android:background="@drawable/watt"
-            />
+            android:background="@drawable/ic_watt" />
 
         <Button
             android:id="@+id/myLocCancel"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_above="@+id/watt"
-
             android:layout_alignStart="@id/watt"
             android:layout_marginStart="13dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="1dp"
             android:background="@drawable/mylocation"
             android:backgroundTint="@color/purple_700"
             android:visibility="gone" />
@@ -76,25 +62,10 @@
             android:layout_above="@+id/watt"
             android:layout_alignStart="@id/watt"
             android:layout_marginStart="13dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="1dp"
             android:background="@drawable/locationcancel"
             android:backgroundTint="@color/black" />
 
-        <TextView
-            android:id="@+id/locOn"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/loc" />
-        <TextView
-            android:id="@+id/locOff"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/locOff" />
-        <TextView
-            android:id="@+id/wattH"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/watthome" />
 
         <Button
             android:id="@+id/sensorStop"
@@ -103,7 +74,7 @@
             android:layout_above="@+id/mapdown"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="5dp"
-            android:text="센서 off"
+            android:text="정지"
             android:textSize="20px"
             android:textStyle="bold"
             android:visibility="gone"/>
@@ -115,7 +86,7 @@
             android:layout_above="@+id/mapdown"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="5dp"
-            android:text="센서 on"
+            android:text="이동"
             android:textSize="20px"
             android:textStyle="bold"
             />
@@ -164,29 +135,6 @@
             android:textSize="40px"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/map_up"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/up" />
-
-        <TextView
-            android:id="@+id/map_down"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/down" />
-
-        <TextView
-            android:id="@+id/map_left"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/left" />
-
-        <TextView
-            android:id="@+id/map_right"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:text="@string/right" />
 
         <Button
             android:id="@+id/circle500"
@@ -240,6 +188,98 @@
             android:layout_marginTop="30dp"
             android:background="@drawable/ic_500m"
             android:visibility="gone"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <TextView
+            android:id="@+id/circleVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="75dp"
+            android:layout_marginLeft="20dp"
+            android:textSize="20px"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/locOn"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc" />
+        <TextView
+            android:id="@+id/locOff"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/locOff" />
+        <TextView
+            android:id="@+id/wattH"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/watthome" />
+        <TextView
+            android:id="@+id/zoomIn_text"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoomIn" />
+
+        <TextView
+            android:id="@+id/zoomOut_text"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoomOut" />
+        <TextView
+            android:id="@+id/map_up"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/up" />
+
+        <TextView
+            android:id="@+id/map_down"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/down" />
+
+        <TextView
+            android:id="@+id/map_left"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/left" />
+
+        <TextView
+            android:id="@+id/map_right"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/right" />
+        <TextView
+            android:id="@+id/circle1"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/circleL1"/>
+        <TextView
+            android:id="@+id/circle2"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/circleL2"/>
+        <TextView
+            android:id="@+id/circle3"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/circleL3"/>
+        <TextView
+            android:id="@+id/circle4"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/circleL4"/>
+        <TextView
+            android:id="@+id/circleR"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/circleLR"/>
+
 
     </RelativeLayout>
 

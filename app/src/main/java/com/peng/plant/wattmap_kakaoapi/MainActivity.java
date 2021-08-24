@@ -52,6 +52,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 
+
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener , TiltScrollController.ScrollListener{//
 
     private static final String TAG = "MainActivity";
@@ -65,8 +66,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
 
     private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart,
-            circle500, circle1000, circle3000, circle5000, removeC, noeCir1;
-    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right, locOn, locOff, wattH,circleVal;
+            circle500, circle1000, circle3000, circle5000, removeC;
+    private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right, locOn, locOff, wattH,circleVal,circle1,circle2,circle3,circle4,circleR;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
@@ -90,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+//        TedNaverClustering.with(this,);
         //카카오맵 view 생성
         mMapView = new MapView(this);
         mMapViewContainer = (ViewGroup) findViewById(R.id.map_view);
@@ -145,9 +148,9 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         //map에 마커 구현
         mMapView.addPOIItems(poiList);
-        
+
         //다중선택 마커
-//        mMapView.selectPOIItem(poiList, false);
+//        mMapView.selectPOIItem(poiList[1], false);
 
         mMapView.setMapCenterPoint(mMapPoint, false);
 
@@ -178,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         return m;
     }
+
+
     //bitmap 리사이징 메소드
     private Bitmap resizingBitmap(Bitmap bm) {
         int maxHeight = 60;
@@ -680,26 +685,58 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
     }
-    //반경표시 리스너
+    //반경표시 버튼 리스너
     private View.OnClickListener circle_control = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.circle500:
                     customCircle(500);
-                    noeCir1.setVisibility(View.VISIBLE);
+                    circleVal.setText("현재 반경 : 500미터");
                     break;
                 case R.id.circle1000:
                     customCircle(1000);
+                    circleVal.setText("현재 반경 : 1Km");
                     break;
                 case R.id.circle3000:
                     customCircle(3000);
+                    circleVal.setText("현재 반경 : 3Km");
                     break;
                 case R.id.circle5000:
                     customCircle(5000);
+                    circleVal.setText("현재 반경 : 5Km");
                     break;
                 case R.id.removeC:
                     removeCircle();
+                    circleVal.setText("");
+                    break;
+            }
+        }
+    };
+    //반경표시 음성 리스너
+    private View.OnClickListener circle_voice = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.circle1:
+                    customCircle(500);
+                    circleVal.setText("현재 반경 : 500미터");
+                    break;
+                case R.id.circle2:
+                    customCircle(1000);
+                    circleVal.setText("현재 반경 : 1Km");
+                    break;
+                case R.id.circle3:
+                    customCircle(3000);
+                    circleVal.setText("현재 반경 : 3Km");
+                    break;
+                case R.id.circle4:
+                    customCircle(5000);
+                    circleVal.setText("현재 반경 : 5Km");
+                    break;
+                case R.id.circleR:
+                    removeCircle();
+                    circleVal.setText("");
                     break;
             }
         }
@@ -743,17 +780,17 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     private void init(){
 
-        //확대 축소 버튼
+        //확대 축소 버튼&음성
         plusBtn = findViewById(R.id.zoomIn);
         minusBtn = findViewById(R.id.zoomOut);
         zoomIn = findViewById(R.id.zoomIn_text);
         zoomOut = findViewById(R.id.zoomOut_text);
-        //지도 이동 버튼
+        //지도 이동 음성버튼
         map_Up = findViewById(R.id.map_up);
         map_Down = findViewById(R.id.map_down);
         map_Left = findViewById(R.id.map_left);
         map_Right = findViewById(R.id.map_right);
-        //위치
+        //위치음성
         locOn = findViewById(R.id.locOn);
         locOff = findViewById(R.id.locOff);
         wattH = findViewById(R.id.wattH);
@@ -773,8 +810,14 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         circle3000 = findViewById(R.id.circle3000);
         circle5000 = findViewById(R.id.circle5000);
         removeC = findViewById(R.id.removeC);
-//        circleVal = findViewById(R.id.circleTxt);
-        noeCir1 = findViewById(R.id.nowCircle1);
+        circleVal = findViewById(R.id.circleVal);
+        //circle 음성
+        circle1 = findViewById(R.id.circle1);
+        circle2 = findViewById(R.id.circle2);
+        circle3 = findViewById(R.id.circle3);
+        circle4 = findViewById(R.id.circle4);
+        circleR = findViewById(R.id.circleR);
+
 
         //Map 리스너
         //지도 이동/확대/축소 이벤트
@@ -812,12 +855,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         //센서 동작
         sensorStop.setOnClickListener(Sensor_control);
         sensorStart.setOnClickListener(Sensor_control);
-        //반경표시
+        //반경표시 버튼
         circle500.setOnClickListener(circle_control);
         circle1000.setOnClickListener(circle_control);
         circle3000.setOnClickListener(circle_control);
         circle5000.setOnClickListener(circle_control);
         removeC.setOnClickListener(circle_control);
+        //반경표시 음성버튼
+        circle1.setOnClickListener(circle_voice);
+        circle2.setOnClickListener(circle_voice);
+        circle3.setOnClickListener(circle_voice);
+        circle4.setOnClickListener(circle_voice);
+        circleR.setOnClickListener(circle_voice);
 
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 

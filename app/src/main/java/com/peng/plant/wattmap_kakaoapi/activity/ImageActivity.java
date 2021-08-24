@@ -9,6 +9,7 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.peng.plant.wattmap_kakaoapi.R;
 
 import java.io.FileInputStream;
@@ -22,10 +23,12 @@ public class ImageActivity extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.image);
 
-        String path = getIntent().getStringExtra("image");
-        Bitmap bm = BitmapFactory.decodeFile(path);
+        Glide.with(this).load(getIntent().getStringExtra("image")).fitCenter().into(imageView);
 
-        imageView.setImageBitmap(bm);
+//        String path = getIntent().getStringExtra("image");
+//        Bitmap bm = BitmapFactory.decodeFile(path);
+//
+//        imageView.setImageBitmap(bm);
 
 
     }

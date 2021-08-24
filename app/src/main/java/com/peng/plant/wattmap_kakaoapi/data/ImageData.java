@@ -1,5 +1,6 @@
 package com.peng.plant.wattmap_kakaoapi.data;
 
+
 public class ImageData {
 
     private String path;
@@ -65,4 +66,6 @@ public class ImageData {
 
     public void setLongitude(String attribute) {
     }
+
+
 }
