@@ -200,43 +200,46 @@
             android:id="@+id/circle1000"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
             android:layout_toRightOf="@id/circle500"
             android:background="@drawable/ic_two" />
+
         <Button
             android:id="@+id/circle3000"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
-            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@id/circle1000"
-            android:background="@drawable/ic_three"/>
+            android:background="@drawable/ic_three" />
+
         <Button
             android:id="@+id/circle5000"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
-            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@+id/circle3000"
-            android:background="@drawable/ic_four"/>
+            android:background="@drawable/ic_four" />
+
         <Button
             android:id="@+id/removeC"
             android:layout_width="50dp"
             android:layout_height="40dp"
+            android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/ic_remove"
             android:layout_toRightOf="@id/circle5000"
-            />
-        <TextView
-            android:id="@+id/circleTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/circleValue"
-            android:layout_marginTop="80dp"
-            android:layout_marginLeft="40dp"
-            android:textSize="15sp"/>
+            android:background="@drawable/ic_remove" />
+
+        <Button
+            android:id="@+id/nowCircle1"
+            android:layout_width="132dp"
+            android:layout_height="123dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/ic_500m"
+            android:visibility="gone"/>
 
     </RelativeLayout>
 

@@ -29,7 +29,7 @@ public class CustomCalloutBalloonAdapter implements CalloutBalloonAdapter {
     public View getCalloutBalloon(MapPOIItem poiItem) {
         Log.d("TAGTAGTAG", poiItem.getItemName());
         ((ImageView) mCalloutBalloon.findViewById(R.id.badge)).setImageBitmap(poiItem.getCustomImageBitmap());
-////        ((TextView) mCalloutBalloon.findViewById(R.id.imageTitle)).setText(poiItem.getItemName());
+//        ((TextView) mCalloutBalloon.findViewById(R.id.imageTitle)).setText(poiItem.getItemName());
 ////        ((TextView) mCalloutBalloon.findViewById(R.id.desc)).setText("Custom CalloutBalloon");
 //        ImageView imageView = mCalloutBalloon.findViewById(R.id.badge);
 //        imageView.setImageBitmap(poiItem.getCustomCalloutBalloonBitmap());
