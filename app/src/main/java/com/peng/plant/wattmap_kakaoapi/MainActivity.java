@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     private static final String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION};
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+    private static final int GET_GALLERY_IMAGE = 200;
 
     private double mCurrentLng, mCurrentLat, mMapX, mMapY;
     private int mZoomLevel = 0;
@@ -124,19 +125,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             checkRunTimePermission();
         }
 
-
         //커스텀 마커 adapter 연결
         mMapView.setCalloutBalloonAdapter(new CustomCalloutBalloonAdapter(this));
         //로컬 이미지 list
         ArrayList<ImageData> list = getPathOfAllImg();
         Log.d("listsize",list.size()+"");
+
         //이미지list 마커list로 적용
         MapPOIItem[] poiList = new MapPOIItem[list.size()];
-
+        //list 목록만큼 반복문 돌려 마커에 담기
         for (int i=0; i < list.size(); i++) {
             MapPOIItem item = createCustomBitmapMarker(list.get(i) , i);
             poiList[i] = item;
-
 
             int picNumber = i + 1;
             CommandView cmdView = new CommandView(this , String.format("사진 %d" , picNumber) , (R.id.id_marker_image + i));
@@ -145,6 +145,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
 
+       for (int i=0; i < list.size(); i++){
+           int finalI = i;
+           mMapView.selectPOIItem(poiList[finalI],false);
+       }
 
         //map에 마커 구현
         mMapView.addPOIItems(poiList);
@@ -154,13 +158,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mMapView.setMapCenterPoint(mMapPoint, false);
 
-
     }
 
 
-
-
-    ///커스텀 마커 담을 메소드
+    ///커스텀 마커 메소드
     private MapPOIItem createCustomBitmapMarker(ImageData data , int pos) {
         MapPOIItem m = new MapPOIItem();
         m.setItemName(data.getPath());
@@ -182,11 +183,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return m;
     }
 
-
     //bitmap 리사이징 메소드
     private Bitmap resizingBitmap(Bitmap bm) {
-        int maxHeight = 60;
-        int maxWidth = 60;
+        int maxHeight = 80;
+        int maxWidth = 80;
         float scale = Math.min(((float)maxHeight / bm.getWidth()), ((float)maxWidth / bm.getHeight()));
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         return bitmap;
     }
 
+    //Local gallery 접근해서 이미지 목록 불러오기
     //이미지 담을 arrayList
     public ArrayList<ImageData> getPathOfAllImg() {
         ArrayList<ImageData> imageList = new ArrayList<ImageData>();
@@ -213,10 +214,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         Cursor cursor = getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
 
         while (cursor.moveToNext()) {
-            String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));
-            Double latitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));
-            Double longitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));
+            String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));//파일경로
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME));//파일이름
+            Double latitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LATITUDE));//위도
+            Double longitude = cursor.getDouble(cursor.getColumnIndex(MediaStore.Images.ImageColumns.LONGITUDE));//경도
 
             ImageData data = new ImageData();
 
@@ -288,10 +289,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     //currentLocation 내위치 갱신
     @Override
     public void onCurrentLocationUpdate(MapView mapView, MapPoint mapPoint, float v) {
+        //위치 갱신 때 값이 잘 들어오는가
         MapPoint.GeoCoordinate mapPointGeo = mapPoint.getMapPointGeoCoord();
         mMapX = mapPointGeo.latitude;
         mMapY = mapPointGeo.longitude;
-
         Log.d(TAG, String.format("MapView onCurrentLocationUpdate (%f,%f) accuracy (%f)", mapPointGeo.latitude, mapPointGeo.longitude, v));
     }
 
@@ -431,18 +432,18 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     @Override
     public void onMapViewCenterPointMoved(MapView mapView, MapPoint mapPoint) {
+        //현재 지도의 중심점 좌표 확인
         MapPoint latlng= mapView.getMapCenterPoint();
         Log.d(TAG, "성공 lat+"+ latlng.getMapPointGeoCoord().latitude);
         Log.d(TAG, "성공 lng+"+ latlng.getMapPointGeoCoord().longitude);
     }
-
     @Override
     public void onMapViewZoomLevelChanged(MapView mapView, int i) {
+        //현재 줌레벨 체크
         int zoomlevel = mapView.getZoomLevel();
         Log.d(TAG, "현재 Zoom Level : " + zoomlevel);
 
     }
-
     @Override
     public void onMapViewSingleTapped(MapView mapView, MapPoint mapPoint) {
 
@@ -473,7 +474,8 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
-    //사진 클릭 리스너
+
+    //사진 음성클릭 리스너
     private View.OnClickListener pictureControl = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -481,10 +483,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             Intent intent = new Intent(getApplicationContext(), ImageActivity.class);
             intent.putExtra("image",itemName);
             startActivity(intent);
+
         }
     };
 
-    //확대축소 리스너
+    //확대축소 음성리스너
     private View.OnClickListener ZoomControl = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -519,29 +522,27 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         public void onClick(View v) {
 
             Double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-                    Double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+            Double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
 
-                    switch (v.getId()){
-                        case R.id.mapup:
-                            mMapX = lat + 0.0035;
-                            mMapY = lng;
-                            break;
-                        case R.id.mapdown:
-                            mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude - 0.0035;
-                            mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
-                            break;
-                        case R.id.mapleft:
-                            mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-                            mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude - 0.0035;
-                            break;
-                        case R.id.mapright:
-                            mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-                            mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude + 0.0035;
+            switch (v.getId()){
+                case R.id.mapup:
+                    mMapX = lat + 0.0035;
+                    mMapY = lng;
                     break;
+                case R.id.mapdown:
+                    mMapX = lat - 0.0035;
+                    mMapY = lng;
+                    break;
+                case R.id.mapleft:
+                    mMapX = lat;
+                    mMapY = lng - 0.0035;
+                    break;
+                case R.id.mapright:
+                    mMapX = lat;
+                    mMapY = lng + 0.0035;
+            break;
             }
-
             mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-
             //현재 줌레벨 가져오기
             mZoomLevel = mMapView.getZoomLevel();
             //이동 좌표 update
@@ -554,29 +555,27 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     private View.OnClickListener MapMoveControl_v = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            Double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+            Double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
             switch (v.getId()){
                 case R.id.map_up:
-                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude + 0.0035;
-                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
-                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapX = lat + 0.0035;
+                    mMapY = lng;
                     break;
                 case R.id.map_down:
-                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude - 0.0035;
-                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
-                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapX = lat - 0.0035;
+                    mMapY = lng;
                     break;
                 case R.id.map_left:
-                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude - 0.0035;
-                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapX = lat;
+                    mMapY = lng - 0.0035;
                     break;
                 case R.id.map_right:
-                    mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-                    mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude + 0.0035;
-                    mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+                    mMapX = lat;
+                    mMapY = lng + 0.0035;
                     break;
-
             }
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
             //현재 줌레벨 가져오기
             mZoomLevel = mMapView.getZoomLevel();
             //이동 좌표 update
@@ -596,7 +595,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     Log.d(TAG, "위치추적 시작");
                     LocCancel.setVisibility(View.VISIBLE);
                     myLoc.setVisibility(View.GONE);
-
                     break;
                 case R.id.myLocCancel:
                     stopTracking();
@@ -604,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     LocCancel.setVisibility(View.GONE);
                     myLoc.setVisibility(View.VISIBLE);
                     break;
-
+                //watt 이동
                 case R.id.watt:
                     mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
                     //현재 줌레벨 가져오기
@@ -628,7 +626,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     Log.d(TAG, "위치추적 시작");
                     LocCancel.setVisibility(View.VISIBLE);
                     myLoc.setVisibility(View.GONE);
-
                     break;
                 case R.id.locOff:
                     stopTracking();
@@ -636,7 +633,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     LocCancel.setVisibility(View.GONE);
                     myLoc.setVisibility(View.VISIBLE);
                     break;
-
+                //와트 이동
                 case R.id.wattH:
                     mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
                     //현재 줌레벨 가져오기
@@ -650,6 +647,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
+    //화면 이동 센서 on/off 리스너
     private View.OnClickListener Sensor_control = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -658,7 +656,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
                     sensor_control = false;
                     sensorStop.setVisibility(View.GONE);
                     sensorStart.setVisibility(View.VISIBLE);
-
                     Log.d("Sensor","센서꺼짐");
                     break;
                 case R.id.sensorStart:
@@ -670,21 +667,21 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
-
-
     //틸트센서
     @Override
     public void onTilt(float x, float y) {
         if(sensor_control){
+            //이동하는 범위
             mCurrentLat = x /1000;
             mCurrentLng = y /1000;
-
+            //현재 중심 좌표 읽어오기
             double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
             double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
             mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat - mCurrentLng , lng + mCurrentLat),true);
         }
 
     }
+
     //반경표시 버튼 리스너
     private View.OnClickListener circle_control = new View.OnClickListener() {
         @Override
@@ -742,28 +739,28 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
-    //반경 메소드
+    //반경 표시 메소드
     private void customCircle(int radius){
-
+        //반경 배열
         MapCircle[] circle = mMapView.getCircles();
-        if (circle.length > 0) {
+        if (circle.length > 0) { //새 반경시 이전 반경 삭제
             mMapView.removeCircle(circle[0]);
         }
-
+        //현재 지도 중심점
         mMapX = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
         mMapY = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
         mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
         mMapView.setMapCenterPoint(mMapPoint,true);
-
+        //반경 만들기
         MapCircle circle1 = new MapCircle(
-                mMapPoint,
-                radius,
+                mMapPoint,//좌표
+                radius,//범위
                 Color.argb(128,255,0,0),//strokecolor테두리
                 Color.argb(0,0,0,0)//fillcolor투명하게
 
         );
         circle1.setTag(1);
-
+        //반경표시가 전체 나오게 하는 코드
         MapPointBounds[] mapPointBoundsArray = {circle1.getBound()};
         MapPointBounds mapPointBounds = new MapPointBounds(mapPointBoundsArray);
         int padding = 50;
@@ -771,13 +768,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mMapView.addCircle(circle1);
     }
+    //반경 제거
     private void removeCircle(){
         mMapView.removeAllCircles();
     }
 
-
-
-
+    //init View
     private void init(){
 
         //확대 축소 버튼&음성

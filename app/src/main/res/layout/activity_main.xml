@@ -15,7 +15,6 @@
             android:id="@+id/zoomIn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="640dp"
             android:layout_marginTop="30dp"
             android:background="@drawable/zoomin"
             android:layout_toLeftOf="@id/zoomOut"

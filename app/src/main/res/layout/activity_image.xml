@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mRelativelayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,4 +9,106 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/zoom1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toLeftOf="@id/zoom2"
+        android:layout_marginRight="1dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/ic_one"
+        />
+    <Button
+        android:id="@+id/zoom2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toLeftOf="@id/zoom3"
+        android:layout_marginRight="1dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/ic_two"
+        />
+    <Button
+        android:id="@+id/zoom3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toLeftOf="@id/zoom4"
+        android:layout_marginRight="1dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/ic_three"
+        />
+    <Button
+        android:id="@+id/zoom4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toLeftOf="@id/zoom5"
+        android:layout_marginRight="1dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/ic_four"
+        />
+    <Button
+        android:id="@+id/zoom5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/ic_five"
+        />
+    <Button
+        android:id="@+id/imageStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:text="정지"
+        android:textSize="20px"
+        android:textStyle="bold"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/imageStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:text="이동"
+        android:textSize="20px"
+        android:textStyle="bold"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/zoomV1"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoom1"/>
+        <TextView
+            android:id="@+id/zoomV2"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoom2"/>
+        <TextView
+            android:id="@+id/zoomV3"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoom3"/>
+        <TextView
+            android:id="@+id/zoomV4"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoom4"/>
+        <TextView
+            android:id="@+id/zoomV5"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/zoom5"/>
+
+    </LinearLayout>
+
+</RelativeLayout>
