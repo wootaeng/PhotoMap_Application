@@ -2,9 +2,6 @@ package com.peng.plant.wattmap_kakaoapi.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.ZoomControls;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,15 +21,13 @@ import com.peng.plant.wattmap_kakaoapi.R;
 import com.peng.plant.wattmap_kakaoapi.controller.TiltScrollController;
 import com.peng.plant.wattmap_kakaoapi.controller.ZoomController;
 
-import java.io.FileInputStream;
-
 public class ImageActivity extends AppCompatActivity implements TiltScrollController.ScrollListener{//
 
     private ImageView imageView, miniView;
     private TiltScrollController mTiltScrollController;
-    private boolean sensor_control = false;
-    private Button Zoom1,Zoom2,Zoom3,Zoom4,Zoom5,sensorM, sensorP;
-    private TextView ZoomV1,ZoomV2,ZoomV3,ZoomV4,ZoomV5;
+    private boolean sensor_control = true;
+    private Button Zoom1,Zoom2,Zoom3,Zoom4,Zoom5, Stopimg;
+    private TextView ZoomV1,ZoomV2,ZoomV3,ZoomV4,ZoomV5, imageM, imageP;
     private ZoomController mZoomcontrol;
     private RelativeLayout mRelativeLayout;
     private View v;
@@ -47,9 +41,7 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
 
         imageView = findViewById(R.id.image);
 
-
-
-        Glide.with(this).load(getIntent().getStringExtra("image")).fitCenter().into(imageView);
+        Glide.with(this).load(getIntent().getStringExtra("image")).into(imageView);
 
         //bitmap 으로 가져오기
 //        String path = getIntent().getStringExtra("image");
@@ -57,10 +49,12 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
 //        imageView.setImageBitmap(bm);
         //View
         init();
-        //
-        MiniMapZoomContrl();
+
         //미니맵 그리기
         miniMapDraw();
+
+        //미니맵 줌
+        MiniMapZoomContrl();
 
 
     }
@@ -104,13 +98,14 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
         @Override
         public void onClick(View v) {
             switch (v.getId()){
-                case R.id.sensorStart:
+                case R.id.imageStart:
                     sensor_control = true;
-                    sensorP.setVisibility(View.VISIBLE);
+                    Stopimg.setVisibility(View.GONE);
+
                     break;
-                case R.id.sensorStop:
+                case R.id.imageStop:
                     sensor_control = false;
-                    sensorM.setVisibility(View.VISIBLE);
+                    Stopimg.setVisibility(View.VISIBLE);
                     break;
                 case R.id.zoomV1:
                     Zoomlevel(1f);
@@ -131,7 +126,31 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
         }
     };
 
+    //미니맵 그리기 메소드
+    private void miniMapDraw(){
+        Glide.with(this).load(getIntent().getStringExtra("image")).into(miniView);
+    }
+    //미니맵 줌 컨트롤러 적용
+    private void MiniMapZoomContrl(){
 
+
+
+    }
+
+    //틸트센서 리스너 메소드
+    @Override
+    public void onTilt(float x, float y) {
+        if (sensor_control){
+//            //틸트 위아래 좌표적용
+////            imageView.setTranslationX(-x*64);
+////            imageView.setTranslationY(-y*64);
+            mZoomcontrol.Move_Sensor(-x*4, -y*4);
+        }
+    }
+    //줌레벨 적용 메소드
+    private void Zoomlevel(float num){
+        mZoomcontrol.zoomlevel(num);
+    }
 
     private void init(){
         //미니맵뷰
@@ -142,12 +161,14 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
         Zoom3 = findViewById(R.id.zoom3);
         Zoom4 = findViewById(R.id.zoom4);
         Zoom5 = findViewById(R.id.zoom5);
-        //센서 버튼
-        sensorM = findViewById(R.id.imageStart);
-        sensorP = findViewById(R.id.imageStop);
+        //센서 텍스트
+        imageM = findViewById(R.id.imageStart);
+        imageP = findViewById(R.id.imageStop);
         //센서 리스너
-        sensorM.setOnClickListener(ZoomLevel_Move_Voice);
-        sensorP.setOnClickListener(ZoomLevel_Move_Voice);
+        imageM.setOnClickListener(ZoomLevel_Move_Voice);
+        imageP.setOnClickListener(ZoomLevel_Move_Voice);
+        //정지버튼
+        Stopimg = findViewById(R.id.stop_img);
         //줌 텍스트
         ZoomV1 = findViewById(R.id.zoomV1);
         ZoomV2 = findViewById(R.id.zoomV2);
@@ -170,15 +191,6 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
 
         mTiltScrollController = new TiltScrollController(getApplicationContext(),this);
 
-
-    }
-
-    //미니맵 그리기 메소드
-    private void miniMapDraw(){
-        Glide.with(this).load(getIntent().getStringExtra("image")).fitCenter().into(miniView);
-    }
-    //미니맵 줌 컨트롤러 적용
-    private void MiniMapZoomContrl(){
         //뷰 에 올리기
         v = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.image_minimap, null, false);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -190,24 +202,13 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
         //미니맵 표시
         mZoomcontrol.setMiniMapEnabled(true);
         //최대 줌
-        mZoomcontrol.setMaxZoom(7f);
+        mZoomcontrol.setMaxZoom(5f);
         //미니맵 크기지정
         mZoomcontrol.setMiniMapHeight(200);
         //미니맵 추가
         mRelativeLayout.addView(mZoomcontrol);
-    }
-    //틸트센서 리스너 메소드
-    @Override
-    public void onTilt(float x, float y) {
-//        if (sensor_control){
-//            //틸트 위아래 좌표적용
-////            imageView.setTranslationX(-x*64);
-////            imageView.setTranslationY(-y*64);
-            mZoomcontrol.Move_Sensor(-x*64, -y*64);
-//        }
-    }
-    //줌레벨 적용 메소드
-    private void Zoomlevel(float num){
-        mZoomcontrol.zoomlevel(num);
+
+
+
     }
 }

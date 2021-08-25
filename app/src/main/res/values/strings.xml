@@ -20,4 +20,12 @@
     <string name="zoom3">줌 레벨 3</string>
     <string name="zoom4">줌 레벨 4</string>
     <string name="zoom5">줌 레벨 5</string>
+    <string name="imagestop">정지</string>
+    <string name="imagestart">이동</string>
+    <string name="loc1">마커1</string>
+    <string name="loc2">마커2</string>
+    <string name="loc3">마커3</string>
+    <string name="loc4">마커4</string>
+    <string name="loc5">마커5</string>
+    <string name="locmarkerdel">마커 삭제</string>
 </resources>

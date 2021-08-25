@@ -278,8 +278,36 @@
             android:layout_width="1dp"
             android:layout_height="1dp"
             android:text="@string/circleLR"/>
-
-
+        <TextView
+            android:id="@+id/loc1"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc1"/>
+        <TextView
+            android:id="@+id/loc2"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc2"/>
+        <TextView
+            android:id="@+id/loc3"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc3"/>
+        <TextView
+            android:id="@+id/loc4"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc4"/>
+        <TextView
+            android:id="@+id/loc5"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/loc5"/>
+        <TextView
+            android:id="@+id/locMarkDel"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:text="@string/locmarkerdel"/>
     </RelativeLayout>
 
 

@@ -67,7 +67,6 @@ public class ZoomController extends FrameLayout {
     // Bitmap ch
     public ZoomController(final Context context) {
         super(context);
-//       this.ch = ch;
     }
 
     public float getZoom() {
@@ -179,7 +178,6 @@ public class ZoomController extends FrameLayout {
         // single touch
         if (ev.getPointerCount() == 1) {
             processSingleTouchEvent(ev);
-//            img_test(5,ev);
         }
 
         // // double touch
@@ -191,8 +189,8 @@ public class ZoomController extends FrameLayout {
         }
 
         // redraw , 다시그리기
-//        getRootView().invalidate();
-//        invalidate();
+        getRootView().invalidate();
+        invalidate();
 
         return true;
     }
@@ -237,7 +235,6 @@ public class ZoomController extends FrameLayout {
         touchLastX = x;
         touchLastY = y;
         Log.d("Tatata", "touchLastX : " + touchLastX);//화면 클릭 좌표
-        Log.d("Tatata", "touchLastY : " + touchLastY);
 
 
         switch (ev.getAction()) {
@@ -264,7 +261,6 @@ public class ZoomController extends FrameLayout {
                     smoothZoomX -= dx / zoom;
                     smoothZoomY -= dy / zoom;
                     Log.d("actionM", "processSingleTouchOutsideMinimap: " + smoothZoomX);
-                    Log.d("actionM", "processSingleTouchOutsideMinimap: " + smoothZoomY);
 
                     return;
                 }
@@ -342,7 +338,6 @@ public class ZoomController extends FrameLayout {
                     dxk = 0.5f * (dx1 + dx2);
                     dyk = 0.5f * (dy1 + dy2);
                     smoothZoomTo(Math.max(1.0f, zoom * d / (d - dd)), zoomX - dxk / zoom, zoomY - dyk / zoom);
-
                 }
 
                 break;
@@ -373,14 +368,9 @@ public class ZoomController extends FrameLayout {
     protected void dispatchDraw(final Canvas canvas) {
         // do zoom
 
-//        Log.d(TAG, "dispatchDraw: dsd" + zoom);
         zoom = lerp(bias(zoom, smoothZoom, 0.05f), smoothZoom, 0.2f);
         smoothZoomX = clamp(0.5f * getWidth() / smoothZoom, smoothZoomX, getWidth() - 0.5f * getWidth() / smoothZoom);
-
-//        Log.d(TAG, "dispatchDraw / smoothZoomX 정보 " + smoothZoomX);
-
         smoothZoomY = clamp(0.5f * getHeight() / smoothZoom, smoothZoomY, getHeight() - 0.5f * getHeight() / smoothZoom);
-//        Log.d(TAG, "dispatchDraw / smoothZoomY 정보 " + smoothZoomY);
 
 
         zoomX = lerp(bias(zoomX, smoothZoomX, 0.1f), smoothZoomX, 0.35f);
@@ -433,13 +423,13 @@ public class ZoomController extends FrameLayout {
             }
 
             //미니맵 가로
-            final int w = (int) (miniMapHeight * (float) getWidth() / getHeight() /1.5 );
+            final int w = (int) (miniMapHeight * (float) getWidth() / getHeight() /2 );
             //미니맵 세로
-            final int h = (int) (miniMapHeight /1.5);
+            final int h = (int) (miniMapHeight /2);
             //미니맵 화면 위치
             canvas.translate(40, 40);
 
-            //이미지 resize
+            //미니맵 이미지 resize
             Bitmap resizing = Bitmap.createScaledBitmap(v.getDrawingCache(), w, h, true);
             //이미지 그리기
             canvas.drawBitmap(resizing, 0, 0, p);
@@ -454,15 +444,14 @@ public class ZoomController extends FrameLayout {
 
             //배경 테두리 색
             p.setColor(Color.BLACK);
-            p.setAlpha(100);
-            //미니맵 배경그림그리기
+//            p.setAlpha(100);
             p.setStyle(Paint.Style.STROKE);
             //테두리 두께
             p.setStrokeWidth(3);
             final float dx = w * zoomX / getWidth();
             final float dy = h * zoomY / getHeight();
 
-            final float fix_dx = (float) (w * 427.0 / getWidth());
+            final float fix_dx = (float) (w * 420.0 / getWidth());
             final float fix_dy = (float) (h * 240.0 / getHeight());
 
             canvas.drawRect(fix_dx - 0.5f * w, fix_dy - 0.5f * h, fix_dx + 0.5f * w, fix_dy + 0.5f * h, p);
