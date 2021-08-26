@@ -1,2 +1,3 @@
 rootProject.name = "wattMap_kakaoapi"
 include ':app'
+include ':tedclustering'

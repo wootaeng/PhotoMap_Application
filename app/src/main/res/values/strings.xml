@@ -10,10 +10,10 @@
     <string name="locOff">위치해제</string>
     <string name="watthome">와트</string>
     <string name="circleValue">현재 반경</string>
-    <string name="circleL1">반경 1</string>
-    <string name="circleL2">반경 2</string>
-    <string name="circleL3">반경 3</string>
-    <string name="circleL4">반경 4</string>
+    <string name="circleL1">반경 레벨1</string>
+    <string name="circleL2">반경 레벨2</string>
+    <string name="circleL3">반경 레벨3</string>
+    <string name="circleL4">반경 레벨4</string>
     <string name="circleLR">반경 해제</string>
     <string name="zoom1">줌 레벨 1</string>
     <string name="zoom2">줌 레벨 2</string>

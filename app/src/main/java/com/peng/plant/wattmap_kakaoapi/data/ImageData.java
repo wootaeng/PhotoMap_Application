@@ -1,7 +1,12 @@
 package com.peng.plant.wattmap_kakaoapi.data;
 
 
-public class ImageData {
+import org.jetbrains.annotations.NotNull;
+
+import ted.gun0912.clustering.clustering.TedClusterItem;
+import ted.gun0912.clustering.geometry.TedLatLng;
+
+public class ImageData implements TedClusterItem {
 
     private String path;
     private String name;
@@ -68,4 +73,9 @@ public class ImageData {
     }
 
 
+    @NotNull
+    @Override
+    public TedLatLng getTedLatLng() {
+        return new TedLatLng(getTedLatLng().getLatitude(),getTedLatLng().getLongitude());
+    }
 }

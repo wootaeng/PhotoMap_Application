@@ -101,7 +101,6 @@ public class ImageActivity extends AppCompatActivity implements TiltScrollContro
                 case R.id.imageStart:
                     sensor_control = true;
                     Stopimg.setVisibility(View.GONE);
-
                     break;
                 case R.id.imageStop:
                     sensor_control = false;

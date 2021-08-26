@@ -141,7 +141,8 @@
             android:layout_height="40dp"
             android:layout_marginTop="30dp"
             android:layout_marginLeft="10dp"
-            android:background="@drawable/ic_one"/>
+            android:background="@drawable/ic_one"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/circle1000"
@@ -150,7 +151,8 @@
             android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
             android:layout_toRightOf="@id/circle500"
-            android:background="@drawable/ic_two" />
+            android:background="@drawable/ic_two"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/circle3000"
@@ -159,7 +161,8 @@
             android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
             android:layout_toRightOf="@id/circle1000"
-            android:background="@drawable/ic_three" />
+            android:background="@drawable/ic_three"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/circle5000"
@@ -168,7 +171,8 @@
             android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
             android:layout_toRightOf="@+id/circle3000"
-            android:background="@drawable/ic_four" />
+            android:background="@drawable/ic_four"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/removeC"
@@ -177,7 +181,8 @@
             android:layout_marginLeft="1dp"
             android:layout_marginTop="30dp"
             android:layout_toRightOf="@id/circle5000"
-            android:background="@drawable/ic_remove" />
+            android:background="@drawable/ic_remove"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/nowCircle1"

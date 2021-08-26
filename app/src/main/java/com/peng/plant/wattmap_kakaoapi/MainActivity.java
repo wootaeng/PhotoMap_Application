@@ -53,6 +53,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ted.gun0912.clustering.TedClustering;
+import ted.gun0912.clustering.TedMap;
+
 
 public class MainActivity extends AppCompatActivity implements MapView.CurrentLocationEventListener, MapView.MapViewEventListener, MapView.POIItemEventListener , TiltScrollController.ScrollListener{//
 
@@ -63,9 +66,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     //xml
     private MapView mMapView;
     private ViewGroup mMapViewContainer;
+
     private MapPoint mMapPoint;
 
     private MapPOIItem mMoveMarker;
+
     private Button plusBtn, minusBtn, mapUp, mapDown, mapRight, mapLeft, myLoc, watt, LocCancel, sensorStop, sensorStart,
             circle500, circle1000, circle3000, circle5000, removeC;
     private TextView zoomIn, zoomOut, map_Up, map_Down, map_Left, map_Right, locOn, locOff, wattH,
@@ -83,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     //센서 동작
     private boolean sensor_control = false;
     private TiltScrollController mTiltScrollController;
-    //범위 써클
-
 
 
     @Override
@@ -93,11 +96,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         setContentView(R.layout.activity_main);
 
-//        TedNaverClustering.with(this,);
+
         //카카오맵 view 생성
         mMapView = new MapView(this);
         mMapViewContainer = (ViewGroup) findViewById(R.id.map_view);
         mMapViewContainer.addView(mMapView);
+
 
         //기본 위치 설정
         mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
@@ -144,11 +148,11 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             cmdView.setTag(item.getItemName());
         }
 
-
-       for (int i=0; i < list.size(); i++){
-           int finalI = i;
-           mMapView.selectPOIItem(poiList[finalI],false);
-       }
+        //마커 선택 반복문 -> 실패
+//       for (int i=0; i < list.size(); i++){
+//           int finalI = i;
+//           mMapView.selectPOIItem(poiList[finalI],false);
+//       }
 
         //map에 마커 구현
         mMapView.addPOIItems(poiList);
@@ -158,8 +162,15 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mMapView.setMapCenterPoint(mMapPoint, false);
 
+
     }
 
+    /**
+     * 마커 관련 메소드
+     * @param mapView
+     * @param mapPoint
+     */
+    //이동 테스트 마커 메소드
     private void createMarker(MapView mapView, MapPoint mapPoint){
         mMoveMarker = new MapPOIItem();
         String name = "위치";
@@ -189,21 +200,10 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         m.setCustomImageAutoscale(false);
         m.setCustomImageAnchor(0.5f, 0.5f);
         //마커 표시 세로촬영이미지 돌아가고 가로 촬영이미지 정상 출력 문제
-        //90도로 세팅시 세로 정상 가로 돌아감
+        //90도로 세팅시 세로 정상 가로 돌아감 // 기기가 가로모드라 그렇게 보이는거로 생각
 //        m.setRotation(90f);
 
         return m;
-    }
-
-    //bitmap 리사이징 메소드
-    private Bitmap resizingBitmap(Bitmap bm) {
-        int maxHeight = 80;
-        int maxWidth = 80;
-        float scale = Math.min(((float)maxHeight / bm.getWidth()), ((float)maxWidth / bm.getHeight()));
-        Matrix matrix = new Matrix();
-        matrix.postScale(scale, scale);
-        Bitmap bitmap = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-        return bitmap;
     }
 
     //Local gallery 접근해서 이미지 목록 불러오기
@@ -252,6 +252,29 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
 
         return imageList;
+    }
+
+    //사진 음성클릭 리스너
+    private View.OnClickListener pictureControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String itemName = (String)v.getTag();
+            Intent intent = new Intent(getApplicationContext(), ImageActivity.class);
+            intent.putExtra("image",itemName);
+            startActivity(intent);
+
+        }
+    };
+
+    //bitmap 리사이징 메소드
+    private Bitmap resizingBitmap(Bitmap bm) {
+        int maxHeight = 80;
+        int maxWidth = 80;
+        float scale = Math.min(((float)maxHeight / bm.getWidth()), ((float)maxWidth / bm.getHeight()));
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap bitmap = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+        return bitmap;
     }
 
     /****
@@ -323,6 +346,12 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
     }
 
+    /**
+     * 퍼미션 결과 확인 코드
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     //requestPermission 을 사용한 퍼미션 요청의 결과 리턴 메소드
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -487,17 +516,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
     }
 
 
-    //사진 음성클릭 리스너
-    private View.OnClickListener pictureControl = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            String itemName = (String)v.getTag();
-            Intent intent = new Intent(getApplicationContext(), ImageActivity.class);
-            intent.putExtra("image",itemName);
-            startActivity(intent);
 
-        }
-    };
 
     //확대축소 음성리스너
     private View.OnClickListener ZoomControl = new View.OnClickListener() {
@@ -513,56 +532,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
             }
         }
     };
-    //확대축소 버튼 리스너
-    private View.OnClickListener ButtonZoomCon = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case R.id.zoomIn:
-                    mMapView.zoomIn(true);
-                    break;
-                case R.id.zoomOut:
-                    mMapView.zoomOut(true);
-                    break;
-            }
-        }
-    };
 
-    //지도 버튼 이동 리스너
-    private View.OnClickListener MapMoveControl = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            Double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-            Double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
-
-            switch (v.getId()){
-                case R.id.mapup:
-                    mMapX = lat + 0.0035;
-                    mMapY = lng;
-                    break;
-                case R.id.mapdown:
-                    mMapX = lat - 0.0035;
-                    mMapY = lng;
-                    break;
-                case R.id.mapleft:
-                    mMapX = lat;
-                    mMapY = lng - 0.0035;
-                    break;
-                case R.id.mapright:
-                    mMapX = lat;
-                    mMapY = lng + 0.0035;
-            break;
-            }
-            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
-            //현재 줌레벨 가져오기
-            mZoomLevel = mMapView.getZoomLevel();
-            //이동 좌표 update
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
-            //좌표이동
-            mMapView.moveCamera(cameraUpdate);
-        }
-    };
     //지도 음성 이동 리스너
     private View.OnClickListener MapMoveControl_v = new View.OnClickListener() {
         @Override
@@ -597,76 +567,7 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
-    //내위치 버튼 리스너
-    private View.OnClickListener myLocation = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case R.id.myLoc:
-                    startTracking();
-                    Log.d(TAG, "위치추적 시작");
-                    LocCancel.setVisibility(View.VISIBLE);
-                    myLoc.setVisibility(View.GONE);
-                    break;
-                case R.id.myLocCancel:
-                    stopTracking();
-                    Log.d(TAG,"위치추적 중지");
-                    LocCancel.setVisibility(View.GONE);
-                    myLoc.setVisibility(View.VISIBLE);
-                    break;
-                //watt 이동
-                case R.id.watt:
-                    mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
-                    //현재 줌레벨 가져오기
-                    mZoomLevel = mMapView.getZoomLevel();
-                    //이동 좌표 update
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
-                    //좌표이동
-                    mMapView.moveCamera(cameraUpdate);
-                    break;
-            }
-        }
-    };
 
-
-    //이동 마커 리스너
-    private View.OnClickListener moveLcaMarker = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            MapPoint mapPoint = null;
-            CameraUpdate cameraUpdate = null;
-            switch (v.getId()) {
-                case R.id.loc1:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43148342074998, 127.17725706501436);
-                    createMarker(mMapView,mapPoint);
-                    break;
-                case R.id.loc2:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43126133427318, 127.17529932584667);
-                    createMarker(mMapView,mapPoint);
-                    break;
-                case R.id.loc3:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.431413210499265, 127.17269882116143);
-                    createMarker(mMapView,mapPoint);
-                    break;
-                case R.id.loc4:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43185622683739, 127.16886862674598);
-                    createMarker(mMapView,mapPoint);
-                    break;
-                case R.id.loc5:
-                    mapPoint = MapPoint.mapPointWithGeoCoord(37.432699654540876, 127.16558560292407);
-                    createMarker(mMapView,mapPoint);
-                    break;
-//                case R.id.locMarkDel: //마커 삭제 코드
-//
-//                    break;
-            }
-            mZoomLevel = mMapView.getZoomLevel();
-            //이동 좌표 update
-            cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint,mZoomLevel);
-            //좌표이동
-            mMapView.moveCamera(cameraUpdate);
-        }
-    };
 
     //내위치 음성 리스너
     private View.OnClickListener myLocation_v = new View.OnClickListener() {
@@ -719,49 +620,48 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         }
     };
 
-    //틸트센서
-    @Override
-    public void onTilt(float x, float y) {
-        if(sensor_control){
-            //이동하는 범위
-            mCurrentLat = x /1000;
-            mCurrentLng = y /1000;
-            //현재 중심 좌표 읽어오기
-            double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
-            double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
-            mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat - mCurrentLng , lng + mCurrentLat),true);
-        }
-
-    }
-
-    //반경표시 버튼 리스너
-    private View.OnClickListener circle_control = new View.OnClickListener() {
+    //이동 마커 테스트 리스너
+    private View.OnClickListener moveLcaMarker = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            MapPoint mapPoint = null;
+            CameraUpdate cameraUpdate = null;
             switch (v.getId()) {
-                case R.id.circle500:
-                    customCircle(500);
-                    circleVal.setText("현재 반경 : 500미터");
+                case R.id.loc1:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43148342074998, 127.17725706501436);
+                    createMarker(mMapView,mapPoint);
                     break;
-                case R.id.circle1000:
-                    customCircle(1000);
-                    circleVal.setText("현재 반경 : 1Km");
+                case R.id.loc2:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.431413210499265, 127.17269882116143);
+                    createMarker(mMapView,mapPoint);
                     break;
-                case R.id.circle3000:
-                    customCircle(3000);
-                    circleVal.setText("현재 반경 : 3Km");
+                case R.id.loc3:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43185622683739, 127.16886862674598);
+                    createMarker(mMapView,mapPoint);
                     break;
-                case R.id.circle5000:
-                    customCircle(5000);
-                    circleVal.setText("현재 반경 : 5Km");
+                case R.id.loc4:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.432699654540876, 127.16558560292407);
+                    createMarker(mMapView,mapPoint);
                     break;
-                case R.id.removeC:
-                    removeCircle();
-                    circleVal.setText("");
+                case R.id.loc5:
+                    mapPoint = MapPoint.mapPointWithGeoCoord(37.43307808592833, 127.15858072823039);
+                    createMarker(mMapView,mapPoint);
                     break;
+//                case R.id.locMarkDel: //마커 삭제 코드
+//
+//                    break;
             }
+            mZoomLevel = mMapView.getZoomLevel();
+            //이동 좌표 update
+            cameraUpdate = CameraUpdateFactory.newMapPoint(mapPoint,mZoomLevel);
+            //좌표이동
+            mMapView.moveCamera(cameraUpdate);
         }
     };
+
+
+
+
     //반경표시 음성 리스너
     private View.OnClickListener circle_voice = new View.OnClickListener() {
         @Override
@@ -825,54 +725,58 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mMapView.removeAllCircles();
     }
 
+    //틸트센서
+    @Override
+    public void onTilt(float x, float y) {
+        if(sensor_control){
+            //이동하는 범위
+            mCurrentLat = x /1000;
+            mCurrentLng = y /1000;
+            //현재 중심 좌표 읽어오기
+            double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+            double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+            mMapView.setMapCenterPoint(MapPoint.mapPointWithGeoCoord(lat - mCurrentLng , lng + mCurrentLat),false);
+        }
+
+    }
+
     //init View
     private void init(){
 
-        //확대 축소 버튼&음성
-        plusBtn = findViewById(R.id.zoomIn);
-        minusBtn = findViewById(R.id.zoomOut);
-        zoomIn = findViewById(R.id.zoomIn_text);
-        zoomOut = findViewById(R.id.zoomOut_text);
+        //확대 축소 음성
+        plusBtn = (Button)findViewById(R.id.zoomIn);
+        minusBtn = (Button)findViewById(R.id.zoomOut);
+        zoomIn = (TextView)findViewById(R.id.zoomIn_text);
+        zoomOut = (TextView)findViewById(R.id.zoomOut_text);
         //지도 이동 음성버튼
-        map_Up = findViewById(R.id.map_up);
-        map_Down = findViewById(R.id.map_down);
-        map_Left = findViewById(R.id.map_left);
-        map_Right = findViewById(R.id.map_right);
+        map_Up = (TextView)findViewById(R.id.map_up);
+        map_Down = (TextView)findViewById(R.id.map_down);
+        map_Left = (TextView)findViewById(R.id.map_left);
+        map_Right = (TextView)findViewById(R.id.map_right);
         //위치음성
-        locOn = findViewById(R.id.locOn);
-        locOff = findViewById(R.id.locOff);
-        wattH = findViewById(R.id.wattH);
-        //view
-        mapUp = findViewById(R.id.mapup);
-        mapDown = findViewById(R.id.mapdown);
-        mapRight = findViewById(R.id.mapright);
-        mapLeft = findViewById(R.id.mapleft);
-        watt = findViewById(R.id.watt);
-        myLoc = findViewById(R.id.myLoc);
-        LocCancel = findViewById(R.id.myLocCancel);
-        sensorStop = findViewById(R.id.sensorStop);
-        sensorStart = findViewById(R.id.sensorStart);
-        //circle
-        circle500 = findViewById(R.id.circle500);
-        circle1000 = findViewById(R.id.circle1000);
-        circle3000 = findViewById(R.id.circle3000);
-        circle5000 = findViewById(R.id.circle5000);
-        removeC = findViewById(R.id.removeC);
-        circleVal = findViewById(R.id.circleVal);
-        //circle 음성
-        circle1 = findViewById(R.id.circle1);
-        circle2 = findViewById(R.id.circle2);
-        circle3 = findViewById(R.id.circle3);
-        circle4 = findViewById(R.id.circle4);
-        circleR = findViewById(R.id.circleR);
+        locOn = (TextView)findViewById(R.id.locOn);
+        locOff = (TextView)findViewById(R.id.locOff);
+        wattH = (TextView)findViewById(R.id.wattH);
+        watt = (Button) findViewById(R.id.watt);
+        myLoc = (Button)findViewById(R.id.myLoc);
+        LocCancel = (Button)findViewById(R.id.myLocCancel);
+        sensorStop = (Button)findViewById(R.id.sensorStop);
+        sensorStart = (Button)findViewById(R.id.sensorStart);
 
+        circleVal = (TextView)findViewById(R.id.circleVal);
+        //circle 음성
+        circle1 = (TextView)findViewById(R.id.circle1);
+        circle2 = (TextView)findViewById(R.id.circle2);
+        circle3 = (TextView)findViewById(R.id.circle3);
+        circle4 = (TextView)findViewById(R.id.circle4);
+        circleR = (TextView)findViewById(R.id.circleR);
         //위치표시
-        Loc1 = findViewById(R.id.loc1);
-        Loc2 = findViewById(R.id.loc2);
-        Loc3 = findViewById(R.id.loc3);
-        Loc4 = findViewById(R.id.loc4);
-        Loc5 = findViewById(R.id.loc5);
-        LocMakDel = findViewById(R.id.locMarkDel);
+        Loc1 = (TextView)findViewById(R.id.loc1);
+        Loc2 = (TextView)findViewById(R.id.loc2);
+        Loc3 = (TextView)findViewById(R.id.loc3);
+        Loc4 = (TextView)findViewById(R.id.loc4);
+        Loc5 = (TextView)findViewById(R.id.loc5);
+        LocMakDel = (TextView)findViewById(R.id.locMarkDel);
         //위치표시 리스너
         Loc1.setOnClickListener(moveLcaMarker);
         Loc2.setOnClickListener(moveLcaMarker);
@@ -887,41 +791,22 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
         mMapView.setCurrentLocationEventListener(this);
         //커스텀 마커 리스너
         mMapView.setPOIItemEventListener(this);
-        //줌 버튼 리스너
-        plusBtn.setOnClickListener(ButtonZoomCon);
-        minusBtn.setOnClickListener(ButtonZoomCon);
         //줌 음성 리스너
         zoomIn.setOnClickListener(ZoomControl);
         zoomOut.setOnClickListener(ZoomControl);
-        //방향 버튼 리스너
-        mapUp.setOnClickListener(MapMoveControl);
-        mapDown.setOnClickListener(MapMoveControl);
-        mapRight.setOnClickListener(MapMoveControl);
-        mapLeft.setOnClickListener(MapMoveControl);
         //방향 음성 리스너
         map_Up.setOnClickListener(MapMoveControl_v);
         map_Down.setOnClickListener(MapMoveControl_v);
         map_Right.setOnClickListener(MapMoveControl_v);
         map_Left.setOnClickListener(MapMoveControl_v);
-        //내위치 리스너
-        myLoc.setOnClickListener(myLocation);
-        LocCancel.setOnClickListener(myLocation);
         //내위치 음성 리스너
         locOn.setOnClickListener(myLocation_v);
         locOff.setOnClickListener(myLocation_v);
-        //회사이동
-        watt.setOnClickListener(myLocation);
         //회사 음성
         wattH.setOnClickListener(myLocation_v);
         //센서 동작
         sensorStop.setOnClickListener(Sensor_control);
         sensorStart.setOnClickListener(Sensor_control);
-        //반경표시 버튼
-        circle500.setOnClickListener(circle_control);
-        circle1000.setOnClickListener(circle_control);
-        circle3000.setOnClickListener(circle_control);
-        circle5000.setOnClickListener(circle_control);
-        removeC.setOnClickListener(circle_control);
         //반경표시 음성버튼
         circle1.setOnClickListener(circle_voice);
         circle2.setOnClickListener(circle_voice);
@@ -931,6 +816,150 @@ public class MainActivity extends AppCompatActivity implements MapView.CurrentLo
 
         mTiltScrollController = new TiltScrollController(getApplicationContext(), this);
 
+
+        //개발시 참고하기 위한 버튼 view & 리스너//
+        mapUp = (Button)findViewById(R.id.mapup);
+        mapDown = (Button)findViewById(R.id.mapdown);
+        mapRight = (Button)findViewById(R.id.mapright);
+        mapLeft = (Button)findViewById(R.id.mapleft);
+        //circle
+        circle500 = (Button)findViewById(R.id.circle500);
+        circle1000 = (Button)findViewById(R.id.circle1000);
+        circle3000 = (Button)findViewById(R.id.circle3000);
+        circle5000 = (Button)findViewById(R.id.circle5000);
+        removeC = findViewById(R.id.removeC);
+        //반경표시 버튼 리스너
+        circle500.setOnClickListener(circle_control);
+        circle1000.setOnClickListener(circle_control);
+        circle3000.setOnClickListener(circle_control);
+        circle5000.setOnClickListener(circle_control);
+        removeC.setOnClickListener(circle_control);
+        //내위치 리스너
+        myLoc.setOnClickListener(myLocation);
+        LocCancel.setOnClickListener(myLocation);
+        //회사이동
+        watt.setOnClickListener(myLocation);
+        //방향 버튼 리스너
+        mapUp.setOnClickListener(MapMoveControl);
+        mapDown.setOnClickListener(MapMoveControl);
+        mapRight.setOnClickListener(MapMoveControl);
+        mapLeft.setOnClickListener(MapMoveControl);
+        //줌 버튼 리스너
+        plusBtn.setOnClickListener(ButtonZoomCon);
+        minusBtn.setOnClickListener(ButtonZoomCon);
+
     }
+
+    //개발 참고용 버튼 리스너
+    //확대축소 버튼 리스너
+    private View.OnClickListener ButtonZoomCon = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.zoomIn:
+                    mMapView.zoomIn(true);
+                    break;
+                case R.id.zoomOut:
+                    mMapView.zoomOut(true);
+                    break;
+            }
+        }
+    };
+
+    //지도 버튼 이동 리스너
+    private View.OnClickListener MapMoveControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            Double lat = mMapView.getMapCenterPoint().getMapPointGeoCoord().latitude;
+            Double lng = mMapView.getMapCenterPoint().getMapPointGeoCoord().longitude;
+
+            switch (v.getId()){
+                case R.id.mapup:
+                    mMapX = lat + 0.0035;
+                    mMapY = lng;
+                    break;
+                case R.id.mapdown:
+                    mMapX = lat - 0.0035;
+                    mMapY = lng;
+                    break;
+                case R.id.mapleft:
+                    mMapX = lat;
+                    mMapY = lng - 0.0035;
+                    break;
+                case R.id.mapright:
+                    mMapX = lat;
+                    mMapY = lng + 0.0035;
+                    break;
+            }
+            mMapPoint = MapPoint.mapPointWithGeoCoord(mMapX, mMapY);
+            //현재 줌레벨 가져오기
+            mZoomLevel = mMapView.getZoomLevel();
+            //이동 좌표 update
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
+            //좌표이동
+            mMapView.moveCamera(cameraUpdate);
+        }
+    };
+
+    //반경표시 버튼 리스너
+    private View.OnClickListener circle_control = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.circle500:
+                    customCircle(500);
+                    circleVal.setText("현재 반경 : 500미터");
+                    break;
+                case R.id.circle1000:
+                    customCircle(1000);
+                    circleVal.setText("현재 반경 : 1Km");
+                    break;
+                case R.id.circle3000:
+                    customCircle(3000);
+                    circleVal.setText("현재 반경 : 3Km");
+                    break;
+                case R.id.circle5000:
+                    customCircle(5000);
+                    circleVal.setText("현재 반경 : 5Km");
+                    break;
+                case R.id.removeC:
+                    removeCircle();
+                    circleVal.setText("");
+                    break;
+            }
+        }
+    };
+
+    //내위치 버튼 리스너
+    private View.OnClickListener myLocation = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.myLoc:
+                    startTracking();
+                    Log.d(TAG, "위치추적 시작");
+                    LocCancel.setVisibility(View.VISIBLE);
+                    myLoc.setVisibility(View.GONE);
+                    break;
+                case R.id.myLocCancel:
+                    stopTracking();
+                    Log.d(TAG,"위치추적 중지");
+                    LocCancel.setVisibility(View.GONE);
+                    myLoc.setVisibility(View.VISIBLE);
+                    break;
+                //watt 이동
+                case R.id.watt:
+                    mMapPoint = MapPoint.mapPointWithGeoCoord(37.43225475043913, 127.17844582341077);
+                    //현재 줌레벨 가져오기
+                    mZoomLevel = mMapView.getZoomLevel();
+                    //이동 좌표 update
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newMapPoint(mMapPoint,mZoomLevel);
+                    //좌표이동
+                    mMapView.moveCamera(cameraUpdate);
+                    break;
+            }
+        }
+    };
 
 }
