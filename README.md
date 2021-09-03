@@ -23,7 +23,7 @@ Glide
 # explain
 onClickllistener 를 활용한 음성인식 
 
-TiltSensor 를 적용하여 지도의 Drag move 효과를 구현
+Tilt Sensor 를 적용하여 지도의 Drag move 효과를 구현
 
 기기 Local에 있는 사진의 위치태그값으로 지도에 표시
 
