@@ -14,11 +14,17 @@ Android Os
 
 SDK min 26
 
+target SDK 28
+
 # API & library
 
 KaKao Map Api 
 
 Glide 
+
+Zomm Controller
+
+Tilt Sensor
 
 # explain
 onClickllistener 를 활용한 음성인식 
